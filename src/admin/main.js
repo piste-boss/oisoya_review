@@ -1,5 +1,3 @@
-import './style.css'
-
 const DEFAULT_LABELS = {
   beginner: '初級',
   intermediate: '中級',
