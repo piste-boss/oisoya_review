@@ -23,64 +23,16 @@ const TIERS = [
 ]
 
 const app = document.querySelector('#admin-app')
+if (!app) {
+  throw new Error('#admin-app が見つかりません。')
+}
 
-app.innerHTML = `
-  <main class="admin">
-    <header class="admin__header">
-      <p class="admin__badge">大磯屋さま 口コミアプリ</p>
-      <h1 class="admin__title">ルータ設定</h1>
-      <p class="admin__lead">ボタンの表示文言とリンク先URLを更新できます。各レベルごとに複数のリンクを登録すると順番に案内されます。</p>
-    </header>
-    <form id="config-form" class="admin__form">
-      <section class="admin__card">
-        <h2>ボタン表示文言</h2>
-        <div class="admin__fields">
-          ${TIERS.map(
-            ({ key, defaultLabel, description }) => `
-              <label class="admin__field">
-                <span class="admin__field-label">${defaultLabel}</span>
-                <input
-                  type="text"
-                  name="${key}Label"
-                  placeholder="${defaultLabel}"
-                  autocomplete="off"
-                />
-                <span class="admin__field-hint">${description}</span>
-              </label>
-            `,
-          ).join('')}
-        </div>
-      </section>
-      <section class="admin__card">
-        <h2>リンク設定</h2>
-        <p class="admin__hint">
-          1行につき1つのURLを登録します。上から順番に自動で案内され、最後まで到達すると再び最初のURLに戻ります。
-        </p>
-        <div class="admin__fields">
-          ${TIERS.map(
-            ({ key, defaultLabel }) => `
-              <label class="admin__field">
-                <span class="admin__field-label">${defaultLabel}リンク</span>
-                <textarea
-                  name="${key}Links"
-                  rows="4"
-                  placeholder="https://example.com/form/${key}-1"
-                ></textarea>
-              </label>
-            `,
-          ).join('')}
-        </div>
-      </section>
-      <div class="admin__actions">
-        <button type="submit" class="admin__submit">設定を保存</button>
-      </div>
-    </form>
-    <p class="admin__status" data-role="status" hidden></p>
-  </main>
-`
+const form = app.querySelector('#config-form')
+const statusEl = app.querySelector('[data-role="status"]')
 
-const form = document.querySelector('#config-form')
-const statusEl = document.querySelector('[data-role="status"]')
+if (!form || !statusEl) {
+  throw new Error('管理画面の必須要素が見つかりません。')
+}
 
 const setStatus = (message, type = 'info') => {
   if (!message) {
