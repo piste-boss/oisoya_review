@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./src/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>大磯屋口コミルータ</title>
+  </head>
+  <body>
+    <div id="app">
+      <noscript>
+        <p style="padding:1rem; text-align:center;">JavaScriptを有効にしてご利用ください。</p>
+      </noscript>
+      <main class="router">
+        <header class="router__header">
+          <p class="router__brand">大磯屋製麺所</p>
+          <h1 class="router__heading">口コミ投稿にご協力ください</h1>
+          <p class="router__lead">
+            ご利用いただきありがとうございます。あなたの声が、これからの大磯屋をより良くする力になります。
+            <span class="router__note">アンケートにご回答いただくと AI が口コミ文章を作成します。</span>
+          </p>
+        </header>
+        <section class="router__buttons">
+          <button class="router__button" data-tier="beginner">
+            <span class="router__button-label">初級</span>
+            <span class="router__button-meta">
+              <small>所要時間 30秒</small>
+              <span>AI が一言の口コミを生成します。</span>
+            </span>
+          </button>
+          <button class="router__button" data-tier="intermediate">
+            <span class="router__button-label">中級</span>
+            <span class="router__button-meta">
+              <small>所要時間 60秒</small>
+              <span>100文字程度の口コミを生成します。</span>
+            </span>
+          </button>
+          <button class="router__button" data-tier="advanced">
+            <span class="router__button-label">上級</span>
+            <span class="router__button-meta">
+              <small>所要時間 90秒</small>
+              <span>200文字程度の口コミを生成します。</span>
+            </span>
+          </button>
+        </section>
+        <p class="router__status" data-role="status" hidden></p>
+      </main>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
