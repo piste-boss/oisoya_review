@@ -18,6 +18,7 @@ const DEFAULT_CONFIG = {
     geminiApiKey: '',
     prompt: '',
     mapsLink: '',
+    model: '',
   },
   updatedAt: null,
 }
@@ -57,6 +58,7 @@ const mergeWithDefault = (config = {}) => {
     geminiApiKey: sanitizeString(config.aiSettings?.geminiApiKey),
     prompt: sanitizeString(config.aiSettings?.prompt),
     mapsLink: sanitizeString(config.aiSettings?.mapsLink),
+    model: sanitizeString(config.aiSettings?.model),
   }
 
   return {

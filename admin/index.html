@@ -92,6 +92,16 @@
               </p>
               <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
+                  <span class="admin__field-label">モデル名</span>
+                  <input
+                    type="text"
+                    name="model"
+                    placeholder="例: gemini-1.5-flash-latest"
+                    autocomplete="off"
+                  />
+                  <span class="admin__field-hint">使用するGeminiモデルを指定します。未入力の場合はデフォルトモデルを利用します。</span>
+                </label>
+                <label class="admin__field">
                   <span class="admin__field-label">Gemini APIキー</span>
                   <input
                     type="password"

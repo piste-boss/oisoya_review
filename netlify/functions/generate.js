@@ -106,8 +106,9 @@ export const handler = async (event) => {
     return jsonResponse(500, { message: 'GASアプリからデータを取得できませんでした。' })
   }
 
-  const model = sanitizeString(event?.queryStringParameters?.model) || DEFAULT_MODEL
-  const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`
+  const requestModel = sanitizeString(event?.queryStringParameters?.model) || sanitizeString(aiSettings.model)
+  const model = requestModel || DEFAULT_MODEL
+  const geminiEndpoint = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`
 
   const completePrompt = buildPrompt(prompt, Array.isArray(dataSamples) ? dataSamples.slice(0, 5) : [])
 

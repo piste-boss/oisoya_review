@@ -20,7 +20,7 @@ npm run build
 ## ページ構成
 
 - `/` : レベル別にフォームへ誘導するルータ画面。
-- `/admin` : ルータ設定とAI設定を管理するページ。Gemini APIキー・Googleマップリンク・GASアプリURL・生成プロンプトを登録できます。
+- `/admin` : ルータ設定とAI設定を管理するページ。Gemini APIキー・Googleマップリンク・GASアプリURL・生成プロンプト・モデル名を登録できます。
 - `/generator` : 口コミ生成ページ。管理画面で設定した情報をもとにAIが口コミ文章を生成し、コピー＆Googleマップ投稿導線を提供します。
 
 ## Netlify Functions

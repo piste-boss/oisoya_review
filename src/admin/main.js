@@ -62,6 +62,7 @@ const aiFields = {
   mapsLink: form.elements.mapsLink,
   gasUrl: form.elements.gasUrl,
   prompt: form.elements.prompt,
+  model: form.elements.model,
 }
 
 const cachedConfig = readCachedConfig()
@@ -134,6 +135,7 @@ function populateForm(config) {
   if (aiFields.mapsLink) aiFields.mapsLink.value = ai.mapsLink || ''
   if (aiFields.gasUrl) aiFields.gasUrl.value = ai.gasUrl || ''
   if (aiFields.prompt) aiFields.prompt.value = ai.prompt || ''
+  if (aiFields.model) aiFields.model.value = ai.model || ''
 }
 
 const loadConfig = async () => {
@@ -201,6 +203,7 @@ form.addEventListener('submit', async (event) => {
     mapsLink: (aiFields.mapsLink?.value || '').trim(),
     gasUrl: (aiFields.gasUrl?.value || '').trim(),
     prompt: (aiFields.prompt?.value || '').trim(),
+    model: (aiFields.model?.value || '').trim(),
   }
 
   const urlCandidates = [
