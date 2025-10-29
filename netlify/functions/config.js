@@ -1,6 +1,5 @@
-import { getStore } from '@netlify/blobs'
+import { getConfigStore } from './_lib/store.js'
 
-const STORE_NAME = 'oiso-review-router-config'
 const CONFIG_KEY = 'router-config'
 
 const DEFAULT_CONFIG = {
@@ -53,9 +52,9 @@ const mergeWithDefault = (config = {}) => {
   }
 }
 
-const store = getStore(STORE_NAME)
-
 export const handler = async (event) => {
+  const store = getConfigStore()
+
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 204,

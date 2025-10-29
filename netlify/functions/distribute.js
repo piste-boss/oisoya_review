@@ -1,6 +1,5 @@
-import { getStore } from '@netlify/blobs'
+import { getConfigStore } from './_lib/store.js'
 
-const STORE_NAME = 'oiso-review-router-config'
 const CONFIG_KEY = 'router-config'
 
 const DEFAULT_CONFIG = {
@@ -54,14 +53,12 @@ const mergeWithDefault = (config = {}) => {
   }
 }
 
-const store = getStore(STORE_NAME)
-
-const fetchConfig = async () => {
+const fetchConfig = async (store) => {
   const storedConfig = await store.get(CONFIG_KEY, { type: 'json' }).catch(() => null)
   return mergeWithDefault(storedConfig || DEFAULT_CONFIG)
 }
 
-const persistConfig = async (config) => {
+const persistConfig = async (store, config) => {
   await store.set(CONFIG_KEY, JSON.stringify(config), {
     contentType: 'application/json',
     metadata: { updatedAt: config.updatedAt || new Date().toISOString() },
@@ -69,6 +66,8 @@ const persistConfig = async (config) => {
 }
 
 export const handler = async (event) => {
+  const store = getConfigStore()
+
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 204,
@@ -97,7 +96,7 @@ export const handler = async (event) => {
     return jsonResponse(400, { message: 'tierパラメータを指定してください。' })
   }
 
-  const config = await fetchConfig()
+  const config = await fetchConfig(store)
   const tierConfig = config.tiers?.[tierKey]
 
   if (!tierConfig) {
@@ -121,7 +120,7 @@ export const handler = async (event) => {
   tierConfig.lastServedAt = timestamp
   config.updatedAt = timestamp
 
-  await persistConfig(config)
+  await persistConfig(store, config)
 
   return jsonResponse(200, {
     url: destination,
