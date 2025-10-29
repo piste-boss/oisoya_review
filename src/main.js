@@ -96,6 +96,13 @@ buttons.forEach((button) => {
   })
 })
 
+const resetUIState = () => {
+  toggleButtons(false)
+  setStatus('')
+  labels = { ...DEFAULT_LABELS }
+  applyLabels()
+}
+
 const loadConfig = async () => {
   try {
     const response = await fetch('/.netlify/functions/config')
@@ -118,4 +125,13 @@ const loadConfig = async () => {
 
 applyLabels()
 loadConfig()
+
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    resetUIState()
+    loadConfig()
+  } else {
+    toggleButtons(false)
+  }
+})
 import './style.css'

@@ -146,3 +146,9 @@ form.addEventListener('submit', async (event) => {
 })
 
 loadConfig()
+
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    loadConfig()
+  }
+})
