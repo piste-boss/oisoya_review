@@ -4,6 +4,26 @@ const DEFAULT_LABELS = {
   advanced: '上級',
 }
 
+const CONFIG_CACHE_KEY = 'oisoya_review_config_cache'
+
+const readCachedConfig = () => {
+  try {
+    const value = window.localStorage.getItem(CONFIG_CACHE_KEY)
+    if (!value) return null
+    return JSON.parse(value)
+  } catch {
+    return null
+  }
+}
+
+const writeCachedConfig = (config) => {
+  try {
+    window.localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify(config))
+  } catch {
+    // noop
+  }
+}
+
 const TIERS = [
   { key: 'beginner', defaultLabel: DEFAULT_LABELS.beginner },
   { key: 'intermediate', defaultLabel: DEFAULT_LABELS.intermediate },
@@ -22,7 +42,12 @@ if (!statusEl || buttons.length === 0) {
   throw new Error('必要なDOM要素が初期化されていません。')
 }
 
-let labels = { ...DEFAULT_LABELS }
+const cachedConfig = readCachedConfig()
+
+let labels = {
+  ...DEFAULT_LABELS,
+  ...(cachedConfig?.labels ?? {}),
+}
 
 const setStatus = (message, type = 'info') => {
   if (!message) {
@@ -99,7 +124,11 @@ buttons.forEach((button) => {
 const resetUIState = () => {
   toggleButtons(false)
   setStatus('')
-  labels = { ...DEFAULT_LABELS }
+  const latestCached = readCachedConfig()
+  labels = {
+    ...DEFAULT_LABELS,
+    ...(latestCached?.labels ?? {}),
+  }
   applyLabels()
 }
 
@@ -113,11 +142,16 @@ const loadConfig = async () => {
     if (payload?.labels) {
       labels = { ...DEFAULT_LABELS, ...payload.labels }
       applyLabels()
+      writeCachedConfig(payload)
     }
     setStatus('')
   } catch (error) {
     console.warn(error)
-    labels = { ...DEFAULT_LABELS }
+    const fallbackConfig = readCachedConfig()
+    labels = {
+      ...DEFAULT_LABELS,
+      ...(fallbackConfig?.labels ?? {}),
+    }
     applyLabels()
     setStatus(error.message, 'warn')
   }
@@ -128,6 +162,12 @@ loadConfig()
 
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) {
+    const latestCached = readCachedConfig()
+    labels = {
+      ...DEFAULT_LABELS,
+      ...(latestCached?.labels ?? {}),
+    }
+    applyLabels()
     resetUIState()
     loadConfig()
   } else {

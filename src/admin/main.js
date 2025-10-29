@@ -4,6 +4,26 @@ const DEFAULT_LABELS = {
   advanced: '上級',
 }
 
+const CONFIG_CACHE_KEY = 'oisoya_review_config_cache'
+
+const readCachedConfig = () => {
+  try {
+    const value = window.localStorage.getItem(CONFIG_CACHE_KEY)
+    if (!value) return null
+    return JSON.parse(value)
+  } catch {
+    return null
+  }
+}
+
+const writeCachedConfig = (config) => {
+  try {
+    window.localStorage.setItem(CONFIG_CACHE_KEY, JSON.stringify(config))
+  } catch {
+    // noop
+  }
+}
+
 const TIERS = [
   {
     key: 'beginner',
@@ -34,6 +54,11 @@ if (!form || !statusEl) {
   throw new Error('管理画面の必須要素が見つかりません。')
 }
 
+const cachedConfig = readCachedConfig()
+if (cachedConfig) {
+  populateForm(cachedConfig)
+}
+
 const setStatus = (message, type = 'info') => {
   if (!message) {
     statusEl.textContent = ''
@@ -47,7 +72,7 @@ const setStatus = (message, type = 'info') => {
   statusEl.dataset.type = type
 }
 
-const populateForm = (config) => {
+function populateForm(config) {
   TIERS.forEach(({ key, defaultLabel }) => {
     const labelInput = form.elements[`${key}Label`]
     const linksInput = form.elements[`${key}Links`]
@@ -72,9 +97,14 @@ const loadConfig = async () => {
     }
     const payload = await response.json()
     populateForm(payload)
+    writeCachedConfig(payload)
     setStatus('最新の設定を読み込みました。', 'success')
   } catch (error) {
     console.error(error)
+    const cached = readCachedConfig()
+    if (cached) {
+      populateForm(cached)
+    }
     setStatus(error.message, 'error')
   }
 }
@@ -136,6 +166,13 @@ form.addEventListener('submit', async (event) => {
       const errorMessage =
         errorPayload?.message || '保存に失敗しました。時間を空けて再度お試しください。'
       throw new Error(errorMessage)
+    }
+
+    const savedConfig = await response.json().catch(() => null)
+    if (savedConfig) {
+      writeCachedConfig(savedConfig)
+    } else {
+      writeCachedConfig({ labels: payload.labels, tiers: payload.tiers })
     }
 
     setStatus('設定を保存しました。', 'success')
