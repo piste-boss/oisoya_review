@@ -28,3 +28,9 @@
   to = "/.netlify/functions/upload"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/generate"
+  to = "/.netlify/functions/generate"
+  status = 200
+  force = true

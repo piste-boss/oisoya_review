@@ -19,12 +19,9 @@ const getCredentials = () => {
 export const createStore = (name = DEFAULT_STORE_NAME) => {
   const credentials = getCredentials()
   if (credentials) {
-    return getStore({
-      name,
-      ...credentials,
-    })
+    return getStore(name, credentials)
   }
-  return getStore({ name })
+  return getStore(name)
 }
 
 export const getConfigStore = () => createStore()

@@ -54,6 +54,16 @@ if (!form || !statusEl) {
   throw new Error('管理画面の必須要素が見つかりません。')
 }
 
+const tabButtons = Array.from(app.querySelectorAll('[data-tab-target]'))
+const tabPanels = Array.from(app.querySelectorAll('[data-tab-panel]'))
+
+const aiFields = {
+  geminiApiKey: form.elements.geminiApiKey,
+  mapsLink: form.elements.mapsLink,
+  gasUrl: form.elements.gasUrl,
+  prompt: form.elements.prompt,
+}
+
 const cachedConfig = readCachedConfig()
 if (cachedConfig) {
   populateForm(cachedConfig)
@@ -72,6 +82,28 @@ const setStatus = (message, type = 'info') => {
   statusEl.dataset.type = type
 }
 
+const activateTab = (target) => {
+  tabButtons.forEach((button) => {
+    const isActive = button.dataset.tabTarget === target
+    button.classList.toggle('is-active', isActive)
+  })
+
+  tabPanels.forEach((panel) => {
+    const isActive = panel.dataset.tabPanel === target
+    panel.classList.toggle('is-active', isActive)
+  })
+}
+
+tabButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    activateTab(button.dataset.tabTarget)
+  })
+})
+
+if (tabButtons.length > 0) {
+  activateTab(tabButtons[0].dataset.tabTarget)
+}
+
 function populateForm(config) {
   TIERS.forEach(({ key, defaultLabel }) => {
     const labelInput = form.elements[`${key}Label`]
@@ -86,6 +118,22 @@ function populateForm(config) {
       linksInput.value = links.join('\n')
     }
   })
+
+  const ai = config.aiSettings || {}
+  if (aiFields.geminiApiKey) {
+    if (ai.hasGeminiApiKey) {
+      aiFields.geminiApiKey.value = ''
+      aiFields.geminiApiKey.placeholder = '登録済みのキーがあります。更新する場合は新しいキーを入力'
+      aiFields.geminiApiKey.dataset.registered = 'true'
+    } else {
+      aiFields.geminiApiKey.value = ai.geminiApiKey || ''
+      aiFields.geminiApiKey.placeholder = '例: AIza...'
+      delete aiFields.geminiApiKey.dataset.registered
+    }
+  }
+  if (aiFields.mapsLink) aiFields.mapsLink.value = ai.mapsLink || ''
+  if (aiFields.gasUrl) aiFields.gasUrl.value = ai.gasUrl || ''
+  if (aiFields.prompt) aiFields.prompt.value = ai.prompt || ''
 }
 
 const loadConfig = async () => {
@@ -129,7 +177,7 @@ const hasInvalidUrl = (value) => {
 form.addEventListener('submit', async (event) => {
   event.preventDefault()
 
-  const payload = { labels: {}, tiers: {} }
+  const payload = { labels: {}, tiers: {}, aiSettings: {} }
   const errors = []
 
   TIERS.forEach(({ key, defaultLabel }) => {
@@ -147,6 +195,30 @@ form.addEventListener('submit', async (event) => {
     payload.labels[key] = labelValue
     payload.tiers[key] = { links }
   })
+
+  const aiSettings = {
+    geminiApiKey: (aiFields.geminiApiKey?.value || '').trim(),
+    mapsLink: (aiFields.mapsLink?.value || '').trim(),
+    gasUrl: (aiFields.gasUrl?.value || '').trim(),
+    prompt: (aiFields.prompt?.value || '').trim(),
+  }
+
+  const urlCandidates = [
+    { value: aiSettings.mapsLink, label: 'Googleマップリンク' },
+    { value: aiSettings.gasUrl, label: 'GASアプリURL' },
+  ]
+
+  urlCandidates.forEach(({ value, label }) => {
+    if (!value) return
+    try {
+      // eslint-disable-next-line no-new
+      new URL(value)
+    } catch {
+      errors.push(`${label} のURL形式が正しくありません。`)
+    }
+  })
+
+  payload.aiSettings = aiSettings
 
   if (errors.length > 0) {
     setStatus(errors.join(' / '), 'error')
@@ -172,7 +244,7 @@ form.addEventListener('submit', async (event) => {
     if (savedConfig) {
       writeCachedConfig(savedConfig)
     } else {
-      writeCachedConfig({ labels: payload.labels, tiers: payload.tiers })
+      writeCachedConfig({ labels: payload.labels, tiers: payload.tiers, aiSettings: payload.aiSettings })
     }
 
     setStatus('設定を保存しました。', 'success')

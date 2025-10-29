@@ -2,6 +2,8 @@ import { getConfigStore } from './_lib/store.js'
 
 const CONFIG_KEY = 'router-config'
 
+const sanitizeString = (value) => (typeof value === 'string' ? value.trim() : '')
+
 const DEFAULT_CONFIG = {
   labels: {
     beginner: '初級',
@@ -12,6 +14,12 @@ const DEFAULT_CONFIG = {
     beginner: { links: [], nextIndex: 0 },
     intermediate: { links: [], nextIndex: 0 },
     advanced: { links: [], nextIndex: 0 },
+  },
+  aiSettings: {
+    gasUrl: '',
+    geminiApiKey: '',
+    prompt: '',
+    mapsLink: '',
   },
   updatedAt: null,
 }
@@ -31,6 +39,15 @@ const jsonResponse = (statusCode, payload = {}) => ({
   body: JSON.stringify(payload),
 })
 
+const toClientConfig = (config) => ({
+  ...config,
+  aiSettings: {
+    ...config.aiSettings,
+    geminiApiKey: config.aiSettings?.geminiApiKey ? '******' : '',
+    hasGeminiApiKey: Boolean(config.aiSettings?.geminiApiKey),
+  },
+})
+
 const mergeWithDefault = (config = {}) => {
   const mergedLabels = { ...DEFAULT_CONFIG.labels, ...(config.labels || {}) }
 
@@ -43,11 +60,19 @@ const mergeWithDefault = (config = {}) => {
     return acc
   }, {})
 
+  const mergedAiSettings = {
+    gasUrl: sanitizeString(config.aiSettings?.gasUrl),
+    geminiApiKey: sanitizeString(config.aiSettings?.geminiApiKey),
+    prompt: sanitizeString(config.aiSettings?.prompt),
+    mapsLink: sanitizeString(config.aiSettings?.mapsLink),
+  }
+
   return {
     ...DEFAULT_CONFIG,
     ...config,
     labels: mergedLabels,
     tiers: mergedTiers,
+    aiSettings: mergedAiSettings,
     updatedAt: config.updatedAt || DEFAULT_CONFIG.updatedAt,
   }
 }
@@ -65,10 +90,13 @@ export const handler = async (event) => {
   if (event.httpMethod === 'GET') {
     const storedConfig = await store.get(CONFIG_KEY, { type: 'json' }).catch(() => null)
     const config = mergeWithDefault(storedConfig || DEFAULT_CONFIG)
-    return jsonResponse(200, config)
+    return jsonResponse(200, toClientConfig(config))
   }
 
   if (event.httpMethod === 'POST') {
+    const storedConfig = await store.get(CONFIG_KEY, { type: 'json' }).catch(() => null)
+    const existingConfig = mergeWithDefault(storedConfig || DEFAULT_CONFIG)
+
     if (!event.body) {
       return jsonResponse(400, { message: 'リクエストボディが空です。' })
     }
@@ -85,6 +113,9 @@ export const handler = async (event) => {
     }
 
     const newConfig = mergeWithDefault(payload)
+
+    const incomingKey = sanitizeString(payload.aiSettings?.geminiApiKey)
+    newConfig.aiSettings.geminiApiKey = incomingKey || existingConfig.aiSettings.geminiApiKey || ''
     const timestamp = new Date().toISOString()
     newConfig.updatedAt = timestamp
 
@@ -103,7 +134,7 @@ export const handler = async (event) => {
       metadata: { updatedAt: timestamp },
     })
 
-    return jsonResponse(200, newConfig)
+    return jsonResponse(200, toClientConfig(newConfig))
   }
 
   return jsonResponse(405, { message: '許可されていないHTTPメソッドです。' })

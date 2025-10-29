@@ -13,6 +13,12 @@ const DEFAULT_CONFIG = {
     intermediate: { links: [], nextIndex: 0 },
     advanced: { links: [], nextIndex: 0 },
   },
+  aiSettings: {
+    gasUrl: '',
+    geminiApiKey: '',
+    prompt: '',
+    mapsLink: '',
+  },
   updatedAt: null,
 }
 
@@ -45,11 +51,20 @@ const mergeWithDefault = (config = {}) => {
     return acc
   }, {})
 
+  const sanitizeString = (value) => (typeof value === 'string' ? value : '')
+  const mergedAiSettings = {
+    gasUrl: sanitizeString(config.aiSettings?.gasUrl),
+    geminiApiKey: sanitizeString(config.aiSettings?.geminiApiKey),
+    prompt: sanitizeString(config.aiSettings?.prompt),
+    mapsLink: sanitizeString(config.aiSettings?.mapsLink),
+  }
+
   return {
     ...DEFAULT_CONFIG,
     ...config,
     labels: mergedLabels,
     tiers: mergedTiers,
+    aiSettings: mergedAiSettings,
   }
 }
 
