@@ -28,6 +28,7 @@
         <nav class="admin__tabs" aria-label="設定メニュー">
           <button type="button" class="admin__tab is-active" data-tab-target="labels">ルータ設定</button>
           <button type="button" class="admin__tab" data-tab-target="ai">AI設定</button>
+          <button type="button" class="admin__tab" data-tab-target="prompts">プロンプト設定</button>
         </nav>
         <form id="config-form" class="admin__form">
           <section class="admin__panel is-active" data-tab-panel="labels">
@@ -88,7 +89,7 @@
             <section class="admin__card">
               <h2>AI設定</h2>
               <p class="admin__hint">
-                Gemini API・GASアプリ・Googleマップの情報を設定します。保存後は口コミ生成ページに反映されます。
+                Gemini API・Googleマップの情報を設定します。保存後は口コミ生成ページに反映されます。
               </p>
               <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
@@ -120,20 +121,76 @@
                     autocomplete="off"
                   />
                 </label>
+              </div>
+            </section>
+          </section>
+          <section class="admin__panel" data-tab-panel="prompts">
+            <section class="admin__card">
+              <h2>プロンプト設定</h2>
+              <p class="admin__hint">
+                生成ページごとに使用するGASアプリURLとプロンプトを設定します。未設定の項目はAI設定の共通値を利用します。
+              </p>
+            </section>
+            <section class="admin__card admin__card--prompt" data-prompt-key="page1">
+              <h3 class="admin__card-subtitle">生成ページ1（初級）</h3>
+              <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
                   <span class="admin__field-label">GASアプリURL</span>
                   <input
                     type="url"
-                    name="gasUrl"
+                    name="prompt_page1_gasUrl"
                     placeholder="https://script.google.com/macros/s/.../exec"
                     autocomplete="off"
                   />
-                  <span class="admin__field-hint">口コミ生成に使う元データを返すGASウェブアプリのURL。</span>
                 </label>
                 <label class="admin__field">
                   <span class="admin__field-label">プロンプト</span>
                   <textarea
-                    name="prompt"
+                    name="prompt_page1_prompt"
+                    rows="6"
+                    placeholder="生成時に利用する指示文を入力してください。"
+                  ></textarea>
+                </label>
+              </div>
+            </section>
+            <section class="admin__card admin__card--prompt" data-prompt-key="page2">
+              <h3 class="admin__card-subtitle">生成ページ2（中級）</h3>
+              <div class="admin__fields admin__fields--single">
+                <label class="admin__field">
+                  <span class="admin__field-label">GASアプリURL</span>
+                  <input
+                    type="url"
+                    name="prompt_page2_gasUrl"
+                    placeholder="https://script.google.com/macros/s/.../exec"
+                    autocomplete="off"
+                  />
+                </label>
+                <label class="admin__field">
+                  <span class="admin__field-label">プロンプト</span>
+                  <textarea
+                    name="prompt_page2_prompt"
+                    rows="6"
+                    placeholder="生成時に利用する指示文を入力してください。"
+                  ></textarea>
+                </label>
+              </div>
+            </section>
+            <section class="admin__card admin__card--prompt" data-prompt-key="page3">
+              <h3 class="admin__card-subtitle">生成ページ3（上級）</h3>
+              <div class="admin__fields admin__fields--single">
+                <label class="admin__field">
+                  <span class="admin__field-label">GASアプリURL</span>
+                  <input
+                    type="url"
+                    name="prompt_page3_gasUrl"
+                    placeholder="https://script.google.com/macros/s/.../exec"
+                    autocomplete="off"
+                  />
+                </label>
+                <label class="admin__field">
+                  <span class="admin__field-label">プロンプト</span>
+                  <textarea
+                    name="prompt_page3_prompt"
                     rows="6"
                     placeholder="生成時に利用する指示文を入力してください。"
                   ></textarea>

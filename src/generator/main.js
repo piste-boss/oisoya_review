@@ -28,6 +28,8 @@ const copyButton = app.querySelector('[data-role="copy"]')
 const textarea = app.querySelector('#generated-text')
 const statusEl = app.querySelector('[data-role="status"]')
 const mapsLinkEl = app.querySelector('[data-role="maps-link"]')
+const promptKey = app.dataset.promptKey || 'page1'
+const tierKey = app.dataset.tier || ''
 
 if (!generateButton || !copyButton || !textarea || !statusEl || !mapsLinkEl) {
   throw new Error('口コミ生成画面の初期化に失敗しました。')
@@ -79,7 +81,7 @@ const handleGenerate = async () => {
     const response = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ promptKey, tier: tierKey }),
     })
 
     if (!response.ok) {
@@ -100,16 +102,20 @@ const handleGenerate = async () => {
     const latestMapsLink = payload?.mapsLink || currentConfig?.aiSettings?.mapsLink
     applyMapsLink(latestMapsLink)
 
-    if (payload?.aiSettings) {
-      currentConfig = {
-        ...currentConfig,
-        aiSettings: {
-          ...(currentConfig.aiSettings || {}),
-          ...payload.aiSettings,
-        },
-      }
-      writeCachedConfig(currentConfig)
+    currentConfig = {
+      ...currentConfig,
+      aiSettings: {
+        ...(currentConfig.aiSettings || {}),
+        ...(payload?.aiSettings || {}),
+        mapsLink: latestMapsLink,
+      },
+      prompts: {
+        ...(currentConfig.prompts || {}),
+        ...(payload?.prompts || {}),
+      },
     }
+
+    writeCachedConfig(currentConfig)
 
     setStatus('口コミを生成しました。', 'success')
   } catch (error) {

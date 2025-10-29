@@ -2,6 +2,36 @@ import { createStore } from './_lib/store.js'
 
 const CONFIG_KEY = 'router-config'
 const DEFAULT_MODEL = 'gemini-1.5-flash-latest'
+const PROMPT_KEY_BY_TIER = {
+  beginner: 'page1',
+  intermediate: 'page2',
+  advanced: 'page3',
+}
+
+const PROMPT_LABELS = {
+  page1: '生成ページ1（初級）',
+  page2: '生成ページ2（中級）',
+  page3: '生成ページ3（上級）',
+}
+
+const VALID_PROMPT_KEYS = new Set(Object.keys(PROMPT_LABELS))
+
+const resolvePromptKey = (value, tierValue) => {
+  const normalizedValue = sanitizeString(value).toLowerCase()
+  const normalizedTier = sanitizeString(tierValue).toLowerCase()
+
+  if (VALID_PROMPT_KEYS.has(normalizedValue)) {
+    return normalizedValue
+  }
+  if (PROMPT_KEY_BY_TIER[normalizedValue]) {
+    return PROMPT_KEY_BY_TIER[normalizedValue]
+  }
+  if (PROMPT_KEY_BY_TIER[normalizedTier]) {
+    return PROMPT_KEY_BY_TIER[normalizedTier]
+  }
+
+  return 'page1'
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -71,21 +101,43 @@ export const handler = async (event) => {
     return jsonResponse(405, { message: 'POSTメソッドのみ利用できます。' })
   }
 
+  let requestPayload = {}
+  if (event.body) {
+    try {
+      requestPayload = JSON.parse(event.body)
+    } catch {
+      return jsonResponse(400, { message: 'JSON形式が正しくありません。' })
+    }
+  }
+
+  const tierInput = sanitizeString(requestPayload.tier)
+  const promptKey = resolvePromptKey(requestPayload.promptKey, tierInput)
+  const promptLabel = PROMPT_LABELS[promptKey] || '生成ページ'
+
   const store = createStore()
   const config = (await store.get(CONFIG_KEY, { type: 'json' }).catch(() => null)) || {}
   const aiSettings = config.aiSettings || {}
 
   const geminiApiKey = sanitizeString(aiSettings.geminiApiKey)
-  const gasUrl = sanitizeString(aiSettings.gasUrl)
-  const prompt = sanitizeString(aiSettings.prompt)
   const mapsLink = sanitizeString(aiSettings.mapsLink)
 
   if (!geminiApiKey) {
     return jsonResponse(400, { message: 'Gemini APIキーが設定されていません。' })
   }
 
+  const promptsConfig = config.prompts || {}
+  const promptConfig = promptsConfig[promptKey] || {}
+  const promptGasUrl = sanitizeString(promptConfig.gasUrl)
+  const promptText = sanitizeString(promptConfig.prompt)
+
+  const fallbackGasUrl = sanitizeString(aiSettings.gasUrl)
+  const fallbackPrompt = sanitizeString(aiSettings.prompt)
+
+  const gasUrl = promptGasUrl || fallbackGasUrl
+  const promptForModel = promptText || fallbackPrompt
+
   if (!gasUrl) {
-    return jsonResponse(400, { message: 'GASアプリURLが設定されていません。' })
+    return jsonResponse(400, { message: `${promptLabel} のGASアプリURLが設定されていません。` })
   }
 
   let dataSamples = []
@@ -110,7 +162,7 @@ export const handler = async (event) => {
   const model = requestModel || DEFAULT_MODEL
   const geminiEndpoint = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`
 
-  const completePrompt = buildPrompt(prompt, Array.isArray(dataSamples) ? dataSamples.slice(0, 5) : [])
+  const completePrompt = buildPrompt(promptForModel, Array.isArray(dataSamples) ? dataSamples.slice(0, 5) : [])
 
   try {
     const geminiResponse = await fetch(geminiEndpoint, {
@@ -144,10 +196,16 @@ export const handler = async (event) => {
     return jsonResponse(200, {
       text: generatedText,
       mapsLink,
+      promptKey,
+      prompts: {
+        [promptKey]: {
+          gasUrl: promptGasUrl,
+          prompt: promptText,
+        },
+      },
       aiSettings: {
         mapsLink,
-        gasUrl,
-        prompt,
+        model,
       },
     })
   } catch (error) {

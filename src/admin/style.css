@@ -163,6 +163,17 @@ body {
   color: var(--text-primary);
 }
 
+.admin__card-subtitle {
+  margin: 0;
+  font-size: clamp(1rem, 3vw, 1.15rem);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.admin__card--prompt {
+  gap: 1.1rem;
+}
+
 .admin__hint {
   margin: 0;
   color: var(--text-tertiary);

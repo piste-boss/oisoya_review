@@ -42,6 +42,12 @@ const TIERS = [
   },
 ]
 
+const PROMPT_CONFIGS = [
+  { key: 'page1', label: '生成ページ1（初級）' },
+  { key: 'page2', label: '生成ページ2（中級）' },
+  { key: 'page3', label: '生成ページ3（上級）' },
+]
+
 const app = document.querySelector('#admin-app')
 if (!app) {
   throw new Error('#admin-app が見つかりません。')
@@ -57,13 +63,18 @@ if (!form || !statusEl) {
 const tabButtons = Array.from(app.querySelectorAll('[data-tab-target]'))
 const tabPanels = Array.from(app.querySelectorAll('[data-tab-panel]'))
 
+
 const aiFields = {
   geminiApiKey: form.elements.geminiApiKey,
   mapsLink: form.elements.mapsLink,
-  gasUrl: form.elements.gasUrl,
-  prompt: form.elements.prompt,
   model: form.elements.model,
 }
+
+const promptFields = PROMPT_CONFIGS.map(({ key }) => ({
+  key,
+  gasUrl: form.elements[`prompt_${key}_gasUrl`],
+  prompt: form.elements[`prompt_${key}_prompt`],
+}))
 
 const cachedConfig = readCachedConfig()
 if (cachedConfig) {
@@ -133,9 +144,14 @@ function populateForm(config) {
     }
   }
   if (aiFields.mapsLink) aiFields.mapsLink.value = ai.mapsLink || ''
-  if (aiFields.gasUrl) aiFields.gasUrl.value = ai.gasUrl || ''
-  if (aiFields.prompt) aiFields.prompt.value = ai.prompt || ''
   if (aiFields.model) aiFields.model.value = ai.model || ''
+
+  const prompts = config.prompts || {}
+  promptFields.forEach(({ key, gasUrl, prompt }) => {
+    const promptConfig = prompts[key] || {}
+    if (gasUrl) gasUrl.value = promptConfig.gasUrl || ''
+    if (prompt) prompt.value = promptConfig.prompt || ''
+  })
 }
 
 const loadConfig = async () => {
@@ -179,7 +195,7 @@ const hasInvalidUrl = (value) => {
 form.addEventListener('submit', async (event) => {
   event.preventDefault()
 
-  const payload = { labels: {}, tiers: {}, aiSettings: {} }
+  const payload = { labels: {}, tiers: {}, aiSettings: {}, prompts: {} }
   const errors = []
 
   TIERS.forEach(({ key, defaultLabel }) => {
@@ -201,27 +217,39 @@ form.addEventListener('submit', async (event) => {
   const aiSettings = {
     geminiApiKey: (aiFields.geminiApiKey?.value || '').trim(),
     mapsLink: (aiFields.mapsLink?.value || '').trim(),
-    gasUrl: (aiFields.gasUrl?.value || '').trim(),
-    prompt: (aiFields.prompt?.value || '').trim(),
     model: (aiFields.model?.value || '').trim(),
   }
 
-  const urlCandidates = [
-    { value: aiSettings.mapsLink, label: 'Googleマップリンク' },
-    { value: aiSettings.gasUrl, label: 'GASアプリURL' },
-  ]
-
-  urlCandidates.forEach(({ value, label }) => {
-    if (!value) return
+  if (aiSettings.mapsLink) {
     try {
       // eslint-disable-next-line no-new
-      new URL(value)
+      new URL(aiSettings.mapsLink)
     } catch {
-      errors.push(`${label} のURL形式が正しくありません。`)
+      errors.push('Googleマップリンク のURL形式が正しくありません。')
     }
-  })
+  }
 
   payload.aiSettings = aiSettings
+
+  promptFields.forEach(({ key, gasUrl, prompt }) => {
+    const gasValue = (gasUrl?.value || '').trim()
+    const promptValue = (prompt?.value || '').trim()
+    const label = PROMPT_CONFIGS.find((item) => item.key === key)?.label || key
+
+    if (gasValue) {
+      try {
+        // eslint-disable-next-line no-new
+        new URL(gasValue)
+      } catch {
+        errors.push(`${label} のGASアプリURL形式が正しくありません。`)
+      }
+    }
+
+    payload.prompts[key] = {
+      gasUrl: gasValue,
+      prompt: promptValue,
+    }
+  })
 
   if (errors.length > 0) {
     setStatus(errors.join(' / '), 'error')
@@ -247,7 +275,12 @@ form.addEventListener('submit', async (event) => {
     if (savedConfig) {
       writeCachedConfig(savedConfig)
     } else {
-      writeCachedConfig({ labels: payload.labels, tiers: payload.tiers, aiSettings: payload.aiSettings })
+      writeCachedConfig({
+        labels: payload.labels,
+        tiers: payload.tiers,
+        aiSettings: payload.aiSettings,
+        prompts: payload.prompts,
+      })
     }
 
     setStatus('設定を保存しました。', 'success')

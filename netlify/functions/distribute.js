@@ -2,6 +2,14 @@ import { getConfigStore } from './_lib/store.js'
 
 const CONFIG_KEY = 'router-config'
 
+const DEFAULT_PROMPTS = {
+  page1: { gasUrl: '', prompt: '' },
+  page2: { gasUrl: '', prompt: '' },
+  page3: { gasUrl: '', prompt: '' },
+}
+
+const sanitizeString = (value) => (typeof value === 'string' ? value.trim() : '')
+
 const DEFAULT_CONFIG = {
   labels: {
     beginner: '初級',
@@ -20,6 +28,7 @@ const DEFAULT_CONFIG = {
     mapsLink: '',
     model: '',
   },
+  prompts: DEFAULT_PROMPTS,
   updatedAt: null,
 }
 
@@ -38,11 +47,32 @@ const jsonResponse = (statusCode, payload = {}) => ({
   body: JSON.stringify(payload),
 })
 
-const mergeWithDefault = (config = {}) => {
-  const mergedLabels = { ...DEFAULT_CONFIG.labels, ...(config.labels || {}) }
+const mergePrompts = (incoming = {}, fallback = DEFAULT_PROMPTS) =>
+  Object.entries(DEFAULT_PROMPTS).reduce((acc, [key, defaults]) => {
+    const incomingEntry = Object.prototype.hasOwnProperty.call(incoming, key) ? incoming[key] || {} : undefined
+    const fallbackEntry = fallback[key] || defaults
+
+    const gasUrl = Object.prototype.hasOwnProperty.call(incomingEntry || {}, 'gasUrl')
+      ? sanitizeString(incomingEntry.gasUrl)
+      : sanitizeString(fallbackEntry.gasUrl ?? defaults.gasUrl)
+
+    const prompt = Object.prototype.hasOwnProperty.call(incomingEntry || {}, 'prompt')
+      ? sanitizeString(incomingEntry.prompt)
+      : sanitizeString(fallbackEntry.prompt ?? defaults.prompt)
+
+    acc[key] = { gasUrl, prompt }
+    return acc
+  }, {})
+
+const mergeWithDefault = (config = {}, fallback = DEFAULT_CONFIG) => {
+  const mergedLabels = {
+    ...DEFAULT_CONFIG.labels,
+    ...(fallback.labels || {}),
+    ...(config.labels || {}),
+  }
 
   const mergedTiers = Object.entries(DEFAULT_CONFIG.tiers).reduce((acc, [tierKey, defaults]) => {
-    const storedTier = config.tiers?.[tierKey] || defaults
+    const storedTier = (config.tiers && config.tiers[tierKey]) || (fallback.tiers && fallback.tiers[tierKey]) || defaults
     const links = Array.isArray(storedTier.links) ? storedTier.links : []
     const nextIndex = Number.isInteger(storedTier.nextIndex) ? storedTier.nextIndex : 0
     acc[tierKey] = {
@@ -52,21 +82,21 @@ const mergeWithDefault = (config = {}) => {
     return acc
   }, {})
 
-  const sanitizeString = (value) => (typeof value === 'string' ? value : '')
   const mergedAiSettings = {
-    gasUrl: sanitizeString(config.aiSettings?.gasUrl),
-    geminiApiKey: sanitizeString(config.aiSettings?.geminiApiKey),
-    prompt: sanitizeString(config.aiSettings?.prompt),
-    mapsLink: sanitizeString(config.aiSettings?.mapsLink),
-    model: sanitizeString(config.aiSettings?.model),
+    gasUrl: sanitizeString(config.aiSettings?.gasUrl ?? fallback.aiSettings?.gasUrl),
+    geminiApiKey: sanitizeString(config.aiSettings?.geminiApiKey ?? fallback.aiSettings?.geminiApiKey),
+    prompt: sanitizeString(config.aiSettings?.prompt ?? fallback.aiSettings?.prompt),
+    mapsLink: sanitizeString(config.aiSettings?.mapsLink ?? fallback.aiSettings?.mapsLink),
+    model: sanitizeString(config.aiSettings?.model ?? fallback.aiSettings?.model),
   }
 
   return {
     ...DEFAULT_CONFIG,
-    ...config,
+    ...fallback,
     labels: mergedLabels,
     tiers: mergedTiers,
     aiSettings: mergedAiSettings,
+    prompts: mergePrompts(config.prompts, fallback.prompts),
   }
 }
 
