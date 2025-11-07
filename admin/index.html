@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../src/admin/style.css" />
@@ -35,23 +35,33 @@
             <section class="admin__card">
               <h2>ボタン表示文言</h2>
               <div class="admin__fields">
-                <label class="admin__field">
-                  <span class="admin__field-label">初級</span>
-                  <input type="text" name="beginnerLabel" placeholder="初級" autocomplete="off" />
-                  <span class="admin__field-hint">初めての口コミ投稿におすすめのステップです。</span>
-                </label>
-                <label class="admin__field">
-                  <span class="admin__field-label">中級</span>
-                  <input type="text" name="intermediateLabel" placeholder="中級" autocomplete="off" />
-                  <span class="admin__field-hint">撮影や投稿に慣れてきた方向けの質問セットです。</span>
-                </label>
-                <label class="admin__field">
-                  <span class="admin__field-label">上級</span>
-                  <input type="text" name="advancedLabel" placeholder="上級" autocomplete="off" />
-                  <span class="admin__field-hint">高い熱量でご協力いただけるお客さま向けのフルセットです。</span>
-                </label>
-              </div>
-            </section>
+              <label class="admin__field">
+                <span class="admin__field-label">ライトカップ</span>
+                <input type="text" name="beginnerLabel" placeholder="ライトカップ" autocomplete="off" />
+                <span class="admin__field-hint">一言レビュー用の最短ルートです。</span>
+              </label>
+              <label class="admin__field">
+                <span class="admin__field-label">ミディアムカップ</span>
+                <input
+                  type="text"
+                  name="intermediateLabel"
+                  placeholder="ミディアムカップ"
+                  autocomplete="off"
+                />
+                <span class="admin__field-hint">100文字前後で風味や温度感を共有する標準ルート。</span>
+              </label>
+              <label class="admin__field">
+                <span class="admin__field-label">フルシティカップ</span>
+                <input
+                  type="text"
+                  name="advancedLabel"
+                  placeholder="フルシティカップ"
+                  autocomplete="off"
+                />
+                <span class="admin__field-hint">熱量の高いレビューをお願いしたいときのリッチルートです。</span>
+              </label>
+            </div>
+          </section>
             <section class="admin__card">
               <h2>リンク設定</h2>
               <p class="admin__hint">
@@ -59,7 +69,7 @@
               </p>
               <div class="admin__fields">
                 <label class="admin__field">
-                  <span class="admin__field-label">初級リンク</span>
+                  <span class="admin__field-label">ライトカップ用リンク</span>
                   <textarea
                     name="beginnerLinks"
                     rows="4"
@@ -67,7 +77,7 @@
                   ></textarea>
                 </label>
                 <label class="admin__field">
-                  <span class="admin__field-label">中級リンク</span>
+                  <span class="admin__field-label">ミディアムカップ用リンク</span>
                   <textarea
                     name="intermediateLinks"
                     rows="4"
@@ -75,7 +85,7 @@
                   ></textarea>
                 </label>
                 <label class="admin__field">
-                  <span class="admin__field-label">上級リンク</span>
+                  <span class="admin__field-label">フルシティカップ用リンク</span>
                   <textarea
                     name="advancedLinks"
                     rows="4"
@@ -132,7 +142,7 @@
               </p>
             </section>
             <section class="admin__card admin__card--prompt" data-prompt-key="page1">
-              <h3 class="admin__card-subtitle">生成ページ1（初級）</h3>
+              <h3 class="admin__card-subtitle">生成ページ1（ライトカップ）</h3>
               <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
                   <span class="admin__field-label">GASアプリURL</span>
@@ -154,7 +164,7 @@
               </div>
             </section>
             <section class="admin__card admin__card--prompt" data-prompt-key="page2">
-              <h3 class="admin__card-subtitle">生成ページ2（中級）</h3>
+              <h3 class="admin__card-subtitle">生成ページ2（ミディアムカップ）</h3>
               <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
                   <span class="admin__field-label">GASアプリURL</span>
@@ -176,7 +186,7 @@
               </div>
             </section>
             <section class="admin__card admin__card--prompt" data-prompt-key="page3">
-              <h3 class="admin__card-subtitle">生成ページ3（上級）</h3>
+              <h3 class="admin__card-subtitle">生成ページ3（フルシティカップ）</h3>
               <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
                   <span class="admin__field-label">GASアプリURL</span>

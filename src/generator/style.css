@@ -1,15 +1,16 @@
 :root {
   color-scheme: only light;
-  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', system-ui, -apple-system,
-    BlinkMacSystemFont, sans-serif;
-  --surface: #fffdf9;
-  --surface-alt: #fff6e8;
-  --accent: #c53a32;
-  --accent-strong: #a62823;
-  --accent-soft: rgba(197, 58, 50, 0.16);
-  --text-primary: #3a2a16;
-  --text-secondary: #6b5641;
-  --text-tertiary: #8f7a63;
+  font-family: 'Noto Sans JP', 'Zen Maru Gothic', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', system-ui,
+    -apple-system, BlinkMacSystemFont, sans-serif;
+  --surface: #fff8f5;
+  --surface-alt: #ffe6e0;
+  --accent: #f7a7c1;
+  --accent-strong: #c76988;
+  --accent-soft: rgba(246, 167, 191, 0.22);
+  --text-primary: #4a2f2d;
+  --text-secondary: #72504b;
+  --text-tertiary: #a07c74;
+  --card-shadow: rgba(74, 47, 45, 0.14);
 }
 
 *,
@@ -27,7 +28,9 @@ body {
 body {
   margin: 0;
   color: var(--text-primary);
-  background: linear-gradient(160deg, var(--surface) 0%, var(--surface-alt) 55%, #ffe7cf 100%);
+  background: radial-gradient(circle at 15% 15%, rgba(255, 236, 227, 0.8) 0%, transparent 40%),
+    radial-gradient(circle at 85% -10%, rgba(255, 220, 235, 0.65) 0%, transparent 45%),
+    linear-gradient(150deg, #fff7f3 0%, #ffe9e7 60%, #ffe1e4 100%);
 }
 
 #generator-app {
@@ -41,13 +44,26 @@ body {
 
 .generator {
   width: min(640px, 100%);
-  background: linear-gradient(180deg, #fff7ec 0%, #fffdf9 60%, #fcead4 100%);
-  border-radius: clamp(24px, 4vw, 32px);
-  box-shadow: 0 26px 52px rgba(58, 42, 22, 0.16);
+  background: linear-gradient(180deg, #fffaf7 0%, #fff1ef 55%, #ffe4df 100%);
+  border-radius: clamp(28px, 4vw, 36px);
+  box-shadow: 0 32px 64px var(--card-shadow);
   display: flex;
   flex-direction: column;
   gap: clamp(1.8rem, 3.5vw, 2.8rem);
   padding: clamp(2rem, 4vw, 3.2rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.generator::after {
+  content: '';
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 60%);
+  right: -40px;
+  top: -50px;
+  opacity: 0.7;
 }
 
 .generator__header {
@@ -62,7 +78,7 @@ body {
   position: absolute;
   top: -0.35rem;
   left: 0;
-  width: 56px;
+  width: 66px;
   height: 6px;
   border-radius: 999px;
   background: var(--accent);
@@ -72,7 +88,7 @@ body {
   align-self: flex-start;
   padding: 0.35rem 0.95rem;
   border-radius: 999px;
-  background: var(--accent-soft);
+  background: rgba(255, 255, 255, 0.85);
   color: var(--accent-strong);
   font-size: 0.8rem;
   font-weight: 600;
@@ -84,7 +100,7 @@ body {
   margin: 0;
   padding: 0.25rem 0.85rem;
   border-radius: 999px;
-  background: rgba(197, 58, 50, 0.12);
+  background: rgba(247, 167, 193, 0.15);
   color: var(--accent-strong);
   font-size: 0.78rem;
   font-weight: 600;
@@ -117,23 +133,23 @@ body {
   border: none;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
-  color: #fff8f2;
+  color: #fffdf9;
   font-weight: 600;
   font-size: 1rem;
   padding: 0.95rem 2.2rem;
   cursor: pointer;
-  box-shadow: 0 20px 36px rgba(165, 40, 35, 0.24);
+  box-shadow: 0 24px 40px rgba(201, 111, 137, 0.26);
   transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
 }
 
 .generator__button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 24px 42px rgba(165, 40, 35, 0.26);
+  transform: translateY(-3px);
+  box-shadow: 0 28px 46px rgba(201, 111, 137, 0.3);
 }
 
 .generator__button:active:not(:disabled) {
   transform: translateY(0);
-  filter: brightness(0.96);
+  filter: brightness(0.95);
 }
 
 .generator__button:disabled {
@@ -163,8 +179,8 @@ body {
 .generator__textarea {
   width: 100%;
   min-height: 200px;
-  border-radius: 22px;
-  border: 1px solid rgba(149, 118, 89, 0.32);
+  border-radius: 24px;
+  border: 1px solid rgba(201, 111, 137, 0.25);
   background: rgba(255, 255, 255, 0.86);
   padding: 1.1rem 1.2rem;
   font: inherit;
@@ -184,7 +200,7 @@ body {
   appearance: none;
   border: none;
   border-radius: 999px;
-  background: rgba(197, 58, 50, 0.12);
+  background: rgba(247, 167, 193, 0.16);
   color: var(--accent-strong);
   font-weight: 600;
   padding: 0.7rem 1.6rem;
@@ -193,7 +209,7 @@ body {
 }
 
 .generator__action-button:hover {
-  background: rgba(197, 58, 50, 0.2);
+  background: rgba(247, 167, 193, 0.24);
   transform: translateY(-1px);
 }
 
@@ -226,7 +242,7 @@ body {
   line-height: 1.5;
   background: var(--accent-soft);
   color: var(--accent-strong);
-  box-shadow: 0 12px 26px rgba(197, 58, 50, 0.14);
+  box-shadow: 0 12px 28px rgba(201, 111, 137, 0.18);
 }
 
 .generator__status[data-type='error'] {

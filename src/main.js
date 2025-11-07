@@ -1,7 +1,7 @@
 const DEFAULT_LABELS = {
-  beginner: '初級',
-  intermediate: '中級',
-  advanced: '上級',
+  beginner: 'ライトカップ',
+  intermediate: 'ミディアムカップ',
+  advanced: 'フルシティカップ',
 }
 
 const CONFIG_CACHE_KEY = 'oisoya_review_config_cache'

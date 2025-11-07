@@ -12,9 +12,9 @@ const DEFAULT_PROMPTS = {
 
 const DEFAULT_CONFIG = {
   labels: {
-    beginner: '初級',
-    intermediate: '中級',
-    advanced: '上級',
+    beginner: 'ライトカップ',
+    intermediate: 'ミディアムカップ',
+    advanced: 'フルシティカップ',
   },
   tiers: {
     beginner: { links: [], nextIndex: 0 },

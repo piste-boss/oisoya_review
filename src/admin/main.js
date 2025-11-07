@@ -43,9 +43,9 @@ const TIERS = [
 ]
 
 const PROMPT_CONFIGS = [
-  { key: 'page1', label: '生成ページ1（初級）' },
-  { key: 'page2', label: '生成ページ2（中級）' },
-  { key: 'page3', label: '生成ページ3（上級）' },
+  { key: 'page1', label: '生成ページ1（ライトカップ）' },
+  { key: 'page2', label: '生成ページ2（ミディアムカップ）' },
+  { key: 'page3', label: '生成ページ3（フルシティカップ）' },
 ]
 
 const app = document.querySelector('#admin-app')
