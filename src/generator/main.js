@@ -70,6 +70,7 @@ const textarea = app.querySelector('#generated-text')
 const statusEl = app.querySelector('[data-role="status"]')
 const mapsLinkEl = app.querySelector('[data-role="maps-link"]')
 const brandElements = {
+  container: app.querySelector('[data-role="brand"]'),
   logo: app.querySelector('[data-role="brand-logo"]'),
   text: app.querySelector('[data-role="brand-text"]'),
 }
@@ -139,6 +140,9 @@ const applyBrandingLogo = (branding = {}) => {
     } else {
       brandElements.text.removeAttribute('hidden')
     }
+  }
+  if (brandElements.container) {
+    brandElements.container.classList.toggle('has-image', Boolean(headerImageUrl))
   }
   const logoUrl = branding.logoDataUrl || branding.faviconDataUrl || ''
   setDocumentFavicon(logoUrl)

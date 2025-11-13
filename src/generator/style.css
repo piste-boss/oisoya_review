@@ -128,6 +128,22 @@ body::before {
   gap: 0.55rem;
 }
 
+.generator__brand.has-image {
+  padding: 0;
+  background: transparent;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: flex-start;
+  width: auto;
+  max-width: 100%;
+  min-width: 120px;
+  height: clamp(30px, 6vw, 55px);
+  border: none;
+  box-shadow: none;
+}
+
 .generator__brand-logo {
   width: 42px;
   height: 42px;
@@ -136,6 +152,20 @@ body::before {
   box-shadow: 0 12px 28px rgba(223, 90, 125, 0.25);
   background: #fff;
   padding: 0.2rem;
+}
+
+.generator__brand.has-image .generator__brand-logo {
+  height: 100%;
+  width: auto;
+  border-radius: 0.75rem;
+  padding: 0;
+  object-fit: contain;
+  box-shadow: none;
+  background: transparent;
+}
+
+.generator__brand.has-image [data-role='brand-text'] {
+  display: none !important;
 }
 
 .generator__brand [hidden] {

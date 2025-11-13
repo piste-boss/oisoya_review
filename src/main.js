@@ -74,6 +74,7 @@ if (!app) {
 }
 
 const brandElements = {
+  container: app.querySelector('[data-role="brand"]'),
   logo: app.querySelector('[data-role="brand-logo"]'),
   text: app.querySelector('[data-role="brand-text"]'),
 }
@@ -96,6 +97,10 @@ const applyBrandingLogo = (branding = {}) => {
     } else {
       brandElements.text.removeAttribute('hidden')
     }
+  }
+
+  if (brandElements.container) {
+    brandElements.container.classList.toggle('has-image', Boolean(headerImageUrl))
   }
 
   const faviconUrl = branding.logoDataUrl || branding.faviconDataUrl || ''
