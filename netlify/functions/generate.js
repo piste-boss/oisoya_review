@@ -8,6 +8,12 @@ const PROMPT_KEY_BY_TIER = {
   advanced: 'page3',
 }
 
+const FORM_KEY_BY_PROMPT = {
+  page1: 'form1',
+  page2: 'form2',
+  page3: 'form3',
+}
+
 const PROMPT_LABELS = {
   page1: '生成ページ1（初級）',
   page2: '生成ページ2（中級）',
@@ -89,7 +95,94 @@ const extractTextFromGemini = (payload) => {
     .trim()
 }
 
-export const handler = async (event) => {
+const extractSpreadsheetId = (url) => {
+  if (typeof url !== 'string' || !url) return ''
+  const trimmed = url.trim()
+  const patterns = [
+    /\/d\/([a-zA-Z0-9-_]+)/,
+    /id=([a-zA-Z0-9-_]+)/,
+  ]
+  for (const pattern of patterns) {
+    const match = trimmed.match(pattern)
+    if (match && match[1]) {
+      return match[1]
+    }
+  }
+  return ''
+}
+
+const buildGasRequestUrl = (
+  baseUrl,
+  { spreadsheetId, surveyResultsSpreadsheetId, surveyResultsSpreadsheetUrl, formKey, submittedAt, responseId },
+) => {
+  const resolvedLegacySpreadsheetId = spreadsheetId || surveyResultsSpreadsheetId || ''
+  const shouldAttachLegacySpreadsheet = Boolean(resolvedLegacySpreadsheetId)
+  const shouldAttachNewSpreadsheetId = Boolean(surveyResultsSpreadsheetId)
+  const shouldAttachNewSpreadsheetUrl = Boolean(surveyResultsSpreadsheetUrl)
+  const shouldAttachTimestamp = Boolean(submittedAt)
+  const shouldAttachResponseId = Boolean(responseId)
+  const shouldAttachFormKey = Boolean(formKey)
+  if (
+    !shouldAttachLegacySpreadsheet &&
+    !shouldAttachNewSpreadsheetId &&
+    !shouldAttachNewSpreadsheetUrl &&
+    !shouldAttachTimestamp &&
+    !shouldAttachResponseId &&
+    !shouldAttachFormKey
+  ) {
+    return baseUrl
+  }
+  try {
+    const url = new URL(baseUrl)
+    if (shouldAttachLegacySpreadsheet) {
+      url.searchParams.set('spreadsheetId', resolvedLegacySpreadsheetId)
+    }
+    if (shouldAttachNewSpreadsheetId) {
+      url.searchParams.set('surveyResultsSpreadsheetId', surveyResultsSpreadsheetId)
+    }
+    if (shouldAttachNewSpreadsheetUrl) {
+      url.searchParams.set('surveyResultsSpreadsheetUrl', surveyResultsSpreadsheetUrl)
+    }
+    if (shouldAttachFormKey) {
+      url.searchParams.set('formKey', formKey)
+    }
+    if (shouldAttachTimestamp) {
+      url.searchParams.set('submittedAt', submittedAt)
+    }
+    if (shouldAttachResponseId) {
+      url.searchParams.set('responseId', responseId)
+    }
+    return url.toString()
+  } catch {
+    const separator = baseUrl.includes('?') ? '&' : '?'
+    const params = new URLSearchParams()
+    if (shouldAttachLegacySpreadsheet) {
+      params.set('spreadsheetId', resolvedLegacySpreadsheetId)
+    }
+    if (shouldAttachNewSpreadsheetId) {
+      params.set('surveyResultsSpreadsheetId', surveyResultsSpreadsheetId)
+    }
+    if (shouldAttachNewSpreadsheetUrl) {
+      params.set('surveyResultsSpreadsheetUrl', surveyResultsSpreadsheetUrl)
+    }
+    if (shouldAttachFormKey) {
+      params.set('formKey', formKey)
+    }
+    if (shouldAttachTimestamp) {
+      params.set('submittedAt', submittedAt)
+    }
+    if (shouldAttachResponseId) {
+      params.set('responseId', responseId)
+    }
+    return `${baseUrl}${separator}${params.toString()}`
+  }
+}
+
+export const config = {
+  blobs: true,
+}
+
+export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 204,
@@ -113,10 +206,12 @@ export const handler = async (event) => {
   const tierInput = sanitizeString(requestPayload.tier)
   const promptKey = resolvePromptKey(requestPayload.promptKey, tierInput)
   const promptLabel = PROMPT_LABELS[promptKey] || '生成ページ'
+  const formKey = FORM_KEY_BY_PROMPT[promptKey] || 'form1'
 
-  const store = createStore()
+  const store = createStore(undefined, context)
   const config = (await store.get(CONFIG_KEY, { type: 'json' }).catch(() => null)) || {}
   const aiSettings = config.aiSettings || {}
+  const surveyResultsConfig = config.surveyResults || {}
 
   const geminiApiKey = sanitizeString(aiSettings.geminiApiKey)
   const mapsLink = sanitizeString(aiSettings.mapsLink)
@@ -129,20 +224,36 @@ export const handler = async (event) => {
   const promptConfig = promptsConfig[promptKey] || {}
   const promptGasUrl = sanitizeString(promptConfig.gasUrl)
   const promptText = sanitizeString(promptConfig.prompt)
-
   const fallbackGasUrl = sanitizeString(aiSettings.gasUrl)
-  const fallbackPrompt = sanitizeString(aiSettings.prompt)
 
   const gasUrl = promptGasUrl || fallbackGasUrl
-  const promptForModel = promptText || fallbackPrompt
+  const promptForModel = promptText
 
   if (!gasUrl) {
     return jsonResponse(400, { message: `${promptLabel} のGASアプリURLが設定されていません。` })
   }
 
+  if (!promptForModel) {
+    return jsonResponse(400, { message: `${promptLabel} のプロンプトが設定されていません。` })
+  }
+
+  const spreadsheetUrl = sanitizeString(surveyResultsConfig.spreadsheetUrl)
+  const spreadsheetId = extractSpreadsheetId(spreadsheetUrl)
+  const submissionTimestamp = sanitizeString(requestPayload.submissionTimestamp)
+  const responseId = sanitizeString(requestPayload.responseId)
+
   let dataSamples = []
   try {
-    const gasResponse = await fetch(gasUrl)
+    const gasFetchUrl = buildGasRequestUrl(gasUrl, {
+      spreadsheetId,
+      surveyResultsSpreadsheetId: spreadsheetId,
+      surveyResultsSpreadsheetUrl: spreadsheetUrl,
+      formKey,
+      submittedAt: submissionTimestamp,
+      responseId,
+    })
+    console.log('GAS fetch URL:', gasFetchUrl)
+    const gasResponse = await fetch(gasFetchUrl)
     if (!gasResponse.ok) {
       throw new Error(`GASアプリの呼び出しに失敗しました (status: ${gasResponse.status}).`)
     }

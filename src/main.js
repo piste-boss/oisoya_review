@@ -4,6 +4,8 @@ const DEFAULT_LABELS = {
   advanced: 'フルシティカップ',
 }
 
+const DEFAULT_FAVICON_PATH = '/vite.svg'
+
 const CONFIG_CACHE_KEY = 'oisoya_review_config_cache'
 
 const readCachedConfig = () => {
@@ -24,6 +26,42 @@ const writeCachedConfig = (config) => {
   }
 }
 
+const inferFaviconType = (value) => {
+  if (!value) return 'image/svg+xml'
+  if (value.startsWith('data:image/')) {
+    const match = value.match(/^data:(image\/[^;]+)/i)
+    if (match) return match[1]
+  }
+  if (value.endsWith('.png')) return 'image/png'
+  if (value.endsWith('.ico')) return 'image/x-icon'
+  if (value.endsWith('.jpg') || value.endsWith('.jpeg')) return 'image/jpeg'
+  if (value.endsWith('.svg')) return 'image/svg+xml'
+  return 'image/png'
+}
+
+const getFaviconLinks = () => {
+  const links = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]')
+  if (links.length > 0) {
+    return Array.from(links)
+  }
+  const newLink = document.createElement('link')
+  newLink.setAttribute('rel', 'icon')
+  document.head.appendChild(newLink)
+  return [newLink]
+}
+
+const setDocumentFavicon = (dataUrl) => {
+  const href = dataUrl || DEFAULT_FAVICON_PATH
+  const type = inferFaviconType(href)
+  const links = getFaviconLinks()
+  links.forEach((link) => {
+    link.setAttribute('href', href)
+    if (type) {
+      link.setAttribute('type', type)
+    }
+  })
+}
+
 const TIERS = [
   { key: 'beginner', defaultLabel: DEFAULT_LABELS.beginner },
   { key: 'intermediate', defaultLabel: DEFAULT_LABELS.intermediate },
@@ -37,12 +75,22 @@ if (!app) {
 
 const statusEl = app.querySelector('[data-role="status"]')
 const buttons = Array.from(app.querySelectorAll('[data-tier]'))
+const brandElements = {
+  logo: app.querySelector('[data-role="brand-logo"]'),
+  text: app.querySelector('[data-role="brand-text"]'),
+}
 
 if (!statusEl || buttons.length === 0) {
   throw new Error('必要なDOM要素が初期化されていません。')
 }
 
 const cachedConfig = readCachedConfig()
+
+if (cachedConfig?.branding) {
+  applyBrandingLogo(cachedConfig.branding)
+} else {
+  applyBrandingLogo()
+}
 
 let labels = {
   ...DEFAULT_LABELS,
@@ -60,6 +108,28 @@ const setStatus = (message, type = 'info') => {
   statusEl.removeAttribute('hidden')
   statusEl.textContent = message
   statusEl.dataset.type = type
+}
+
+const applyBrandingLogo = (branding = {}) => {
+  const logoUrl = branding.logoDataUrl || branding.faviconDataUrl || ''
+  if (brandElements.logo) {
+    if (logoUrl) {
+      brandElements.logo.src = logoUrl
+      brandElements.logo.removeAttribute('hidden')
+    } else {
+      brandElements.logo.setAttribute('hidden', '')
+    }
+  }
+
+  if (brandElements.text) {
+    if (logoUrl) {
+      brandElements.text.setAttribute('hidden', '')
+    } else {
+      brandElements.text.removeAttribute('hidden')
+    }
+  }
+
+  setDocumentFavicon(logoUrl)
 }
 
 const applyLabels = () => {
@@ -129,6 +199,7 @@ const resetUIState = () => {
     ...DEFAULT_LABELS,
     ...(latestCached?.labels ?? {}),
   }
+  applyBrandingLogo(latestCached?.branding)
   applyLabels()
 }
 
@@ -143,6 +214,7 @@ const loadConfig = async () => {
       labels = { ...DEFAULT_LABELS, ...payload.labels }
       applyLabels()
       writeCachedConfig(payload)
+      applyBrandingLogo(payload.branding)
     }
     setStatus('')
   } catch (error) {
@@ -153,6 +225,7 @@ const loadConfig = async () => {
       ...(fallbackConfig?.labels ?? {}),
     }
     applyLabels()
+    applyBrandingLogo(fallbackConfig?.branding)
     setStatus(error.message, 'warn')
   }
 }
@@ -168,6 +241,7 @@ window.addEventListener('pageshow', (event) => {
       ...(latestCached?.labels ?? {}),
     }
     applyLabels()
+    applyBrandingLogo(latestCached?.branding)
     resetUIState()
     loadConfig()
   } else {

@@ -2,6 +2,7 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -10,66 +11,53 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../src/admin/style.css" />
-    <title>大磯屋口コミルータ | 管理ページ</title>
+    <title>サクラト。カフェ | システム設定</title>
   </head>
   <body>
-    <div id="admin-app">
+    <div id="admin-app" data-app-role="admin">
       <noscript>
         <p style="padding:1rem; text-align:center;">JavaScriptを有効にしてご利用ください。</p>
       </noscript>
       <main class="admin">
         <header class="admin__header">
-          <p class="admin__badge">サクラト。カフェ口コミ管理ページ</p>
-          <h1 class="admin__title">ルータ設定</h1>
+          <p class="admin__badge">サクラト。カフェ 管理ページ</p>
+          <h1 class="admin__title">システム設定</h1>
           <p class="admin__lead">
-            ボタンの表示文言とリンク先URLを更新できます。各レベルごとに複数のリンクを登録すると順番に案内されます。
+            Gemini API キーやアンケート送信先など、セキュリティに関わる設定を編集します。ルータ／アンケート／AI プロンプトは
+            <a href="/user/">ユーザー設定ページ</a>
+            から調整してください。
           </p>
         </header>
-        <nav class="admin__tabs" aria-label="設定メニュー">
-          <button type="button" class="admin__tab is-active" data-tab-target="labels">ルータ設定</button>
-          <button type="button" class="admin__tab" data-tab-target="ai">AI設定</button>
-          <button type="button" class="admin__tab" data-tab-target="prompts">プロンプト設定</button>
-        </nav>
+        <div class="admin__menu" data-role="tab-menu-container">
+          <button
+            type="button"
+            class="admin__menu-trigger"
+            data-role="tab-menu-trigger"
+            aria-expanded="false"
+            aria-controls="admin-tab-menu"
+            aria-label="メニュー"
+          >
+            <span class="sr-only">メニュー</span>
+            <span class="admin__menu-trigger-icon" aria-hidden="true">≡</span>
+          </button>
+          <div class="admin__menu-panel" id="admin-tab-menu" data-role="tab-menu" aria-hidden="true">
+            <nav class="admin__tabs" aria-label="設定メニュー">
+              <button type="button" class="admin__tab is-active" data-tab-target="ai">システム設定</button>
+              <button type="button" class="admin__tab" data-tab-target="user-data">店舗情報</button>
+              <button type="button" class="admin__tab" data-tab-target="prompt-generator">プロンプトジェネレーター</button>
+            </nav>
+          </div>
+        </div>
         <form id="config-form" class="admin__form">
-          <section class="admin__panel is-active" data-tab-panel="labels">
+          <section class="admin__panel is-active" data-tab-panel="ai">
             <section class="admin__card">
-              <h2>ボタン表示文言</h2>
-              <div class="admin__fields">
-              <label class="admin__field">
-                <span class="admin__field-label">初級</span>
-                <input type="text" name="beginnerLabel" placeholder="初級" autocomplete="off" />
-                <span class="admin__field-hint">一言レビュー用の最短ルートです。</span>
-              </label>
-              <label class="admin__field">
-                <span class="admin__field-label">中級</span>
-                <input
-                  type="text"
-                  name="intermediateLabel"
-                  placeholder="中級"
-                  autocomplete="off"
-                />
-                <span class="admin__field-hint">100文字前後で風味や温度感を共有する標準ルート。</span>
-              </label>
-              <label class="admin__field">
-                <span class="admin__field-label">上級</span>
-                <input
-                  type="text"
-                  name="advancedLabel"
-                  placeholder="上級"
-                  autocomplete="off"
-                />
-                <span class="admin__field-hint">熱量の高いレビューをお願いしたいときのリッチルートです。</span>
-              </label>
-            </div>
-          </section>
-            <section class="admin__card">
-              <h2>リンク設定</h2>
+              <h2>トップページリンク先</h2>
               <p class="admin__hint">
-                1行につき1つのURLを登録します。上から順番に自動で案内され、最後まで到達すると再び最初のURLに戻ります。
+                1行につき1つのURLを登録します。ルータの各ボタンは上から順番に自動案内され、末尾まで到達すると先頭に戻ります。
               </p>
               <div class="admin__fields">
                 <label class="admin__field">
-                  <span class="admin__field-label">初級用リンク</span>
+                  <span class="admin__field-label">アンケート1リンク</span>
                   <textarea
                     name="beginnerLinks"
                     rows="4"
@@ -77,7 +65,7 @@
                   ></textarea>
                 </label>
                 <label class="admin__field">
-                  <span class="admin__field-label">中級用リンク</span>
+                  <span class="admin__field-label">アンケート2リンク</span>
                   <textarea
                     name="intermediateLinks"
                     rows="4"
@@ -85,7 +73,7 @@
                   ></textarea>
                 </label>
                 <label class="admin__field">
-                  <span class="admin__field-label">上級用リンク</span>
+                  <span class="admin__field-label">アンケート3リンク</span>
                   <textarea
                     name="advancedLinks"
                     rows="4"
@@ -94,10 +82,8 @@
                 </label>
               </div>
             </section>
-          </section>
-          <section class="admin__panel" data-tab-panel="ai">
             <section class="admin__card">
-              <h2>AI設定</h2>
+              <h2>口コミAI設定</h2>
               <p class="admin__hint">
                 Gemini API・Googleマップの情報を設定します。保存後は口コミ生成ページに反映されます。
               </p>
@@ -122,30 +108,16 @@
                   />
                   <span class="admin__field-hint">Gemini API のシークレットキーを入力してください。</span>
                 </label>
-                <label class="admin__field">
-                  <span class="admin__field-label">Googleマップリンク</span>
-                  <input
-                    type="url"
-                    name="mapsLink"
-                    placeholder="https://maps.app.goo.gl/..."
-                    autocomplete="off"
-                  />
-                </label>
               </div>
             </section>
-          </section>
-          <section class="admin__panel" data-tab-panel="prompts">
-            <section class="admin__card">
-              <h2>プロンプト設定</h2>
+            <section class="admin__card admin__card--results">
+              <h2>アンケートデータ</h2>
               <p class="admin__hint">
-                生成ページごとに使用するGASアプリURLとプロンプトを設定します。未設定の項目はAI設定の共通値を利用します。
+                各アンケートの回答取得に使う GAS アプリURL を設定します。プロンプト設定タブでは指示文のみ編集します。
               </p>
-            </section>
-            <section class="admin__card admin__card--prompt" data-prompt-key="page1">
-              <h3 class="admin__card-subtitle">生成ページ1（初級）</h3>
               <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
-                  <span class="admin__field-label">GASアプリURL</span>
+                  <span class="admin__field-label">アンケート1 GAS URL</span>
                   <input
                     type="url"
                     name="prompt_page1_gasUrl"
@@ -154,20 +126,7 @@
                   />
                 </label>
                 <label class="admin__field">
-                  <span class="admin__field-label">プロンプト</span>
-                  <textarea
-                    name="prompt_page1_prompt"
-                    rows="6"
-                    placeholder="生成時に利用する指示文を入力してください。"
-                  ></textarea>
-                </label>
-              </div>
-            </section>
-            <section class="admin__card admin__card--prompt" data-prompt-key="page2">
-              <h3 class="admin__card-subtitle">生成ページ2（中級）</h3>
-              <div class="admin__fields admin__fields--single">
-                <label class="admin__field">
-                  <span class="admin__field-label">GASアプリURL</span>
+                  <span class="admin__field-label">アンケート2 GAS URL</span>
                   <input
                     type="url"
                     name="prompt_page2_gasUrl"
@@ -176,20 +135,7 @@
                   />
                 </label>
                 <label class="admin__field">
-                  <span class="admin__field-label">プロンプト</span>
-                  <textarea
-                    name="prompt_page2_prompt"
-                    rows="6"
-                    placeholder="生成時に利用する指示文を入力してください。"
-                  ></textarea>
-                </label>
-              </div>
-            </section>
-            <section class="admin__card admin__card--prompt" data-prompt-key="page3">
-              <h3 class="admin__card-subtitle">生成ページ3（上級）</h3>
-              <div class="admin__fields admin__fields--single">
-                <label class="admin__field">
-                  <span class="admin__field-label">GASアプリURL</span>
+                  <span class="admin__field-label">アンケート3 GAS URL</span>
                   <input
                     type="url"
                     name="prompt_page3_gasUrl"
@@ -197,22 +143,126 @@
                     autocomplete="off"
                   />
                 </label>
+              </div>
+            </section>
+            <section class="admin__card admin__card--results">
+              <h2>アンケート送信App</h2>
+              <p class="admin__hint">アンケート1〜3の回答を保存するバックエンドappのエンドポイントを設定します。</p>
+              <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
-                  <span class="admin__field-label">プロンプト</span>
-                  <textarea
-                    name="prompt_page3_prompt"
-                    rows="6"
-                    placeholder="生成時に利用する指示文を入力してください。"
-                  ></textarea>
+                  <span class="admin__field-label">送信先API(URL)</span>
+                  <input
+                    type="url"
+                    name="surveyEndpointUrl"
+                    placeholder="https://script.google.com/macros/s/.../exec"
+                    autocomplete="off"
+                  />
+                  <span class="admin__field-hint">
+                    GAS などで公開した Web API の URL。アンケート1/2/3 は回答送信時に <code>{ formKey, answers, metadata }</code> を POST します。
+                  </span>
+                </label>
+                <label class="admin__field">
+                  <span class="admin__field-label">APIキー（任意）</span>
+                  <input type="text" name="surveyApiKey" placeholder="例: Bearer 用シークレット" autocomplete="off" />
+                  <span class="admin__field-hint">送信時に <code>Authorization: Bearer {キー}</code> を付与します。未入力の場合はヘッダーを省略します。</span>
                 </label>
               </div>
             </section>
           </section>
-          <div class="admin__actions">
-            <button type="submit" class="admin__submit">設定を保存</button>
+          <section class="admin__panel" data-tab-panel="prompt-generator">
+          <section class="admin__card">
+            <h2>プロンプトジェネレーター</h2>
+            <p class="admin__hint">
+              口コミ生成用のGemini APIと基本プロンプトを設定します。ここで入力した値は運用チーム向けのジェネレーターで利用されます。
+            </p>
+            <div class="admin__fields admin__fields--single">
+              <label class="admin__field">
+                <span class="admin__field-label">Gemini API</span>
+                <input type="password" name="promptGeneratorGeminiApi" placeholder="例: AIza..." autocomplete="off" />
+              </label>
+              <label class="admin__field">
+                <span class="admin__field-label">基本プロンプト</span>
+                <textarea
+                  name="promptGeneratorPrompt"
+                  rows="6"
+                  placeholder="口コミ生成時に利用するプロンプトを入力してください。"
+                ></textarea>
+              </label>
+            </div>
+          </section>
+          <section class="admin__card">
+            <h2>参考文面入力欄</h2>
+            <p class="admin__hint">各コースにあわせた参考文面を保存しておくと、スタッフがすぐに呼び出せます。</p>
+            <div class="admin__fields admin__fields--single">
+              <label class="admin__field">
+                <span class="admin__field-label">ライト</span>
+                <textarea
+                  name="promptGeneratorReferenceLight"
+                  rows="4"
+                  placeholder="短めの口コミサンプルを入力してください。"
+                ></textarea>
+              </label>
+              <label class="admin__field">
+                <span class="admin__field-label">スタンダード</span>
+                <textarea
+                  name="promptGeneratorReferenceStandard"
+                  rows="4"
+                  placeholder="スタンダード用の口コミサンプルを入力してください。"
+                ></textarea>
+              </label>
+              <label class="admin__field">
+                <span class="admin__field-label">プラチナ</span>
+                <textarea
+                  name="promptGeneratorReferencePlatinum"
+                  rows="4"
+                  placeholder="プラチナ用の口コミサンプルを入力してください。"
+                ></textarea>
+              </label>
+            </div>
+          </section>
+        </section>
+        <section class="admin__panel" data-tab-panel="user-data">
+          <section class="admin__card">
+            <h2>店舗情報保存先</h2>
+            <p class="admin__hint">ユーザー設定ページの入力内容を保存／読み取りするGASやスプレッドシートを登録します。</p>
+            <div class="admin__fields admin__fields--single">
+              <label class="admin__field">
+                <span class="admin__field-label">スプレッドシートURL</span>
+                <input
+                  type="url"
+                  name="userDataSpreadsheetUrl"
+                  placeholder="https://docs.google.com/spreadsheets/d/..."
+                  autocomplete="off"
+                />
+              </label>
+              <label class="admin__field">
+                <span class="admin__field-label">店舗情報保存GASエンドポイント</span>
+                <input
+                  type="url"
+                  name="userDataSubmitGasUrl"
+                  placeholder="https://script.google.com/macros/s/xxxx/exec"
+                  autocomplete="off"
+                />
+                <span class="admin__field-hint">店舗情報を保存するWebアプリURLを登録してください。</span>
+              </label>
+              <label class="admin__field">
+                <span class="admin__field-label">店舗情報読み取りGAS URL</span>
+                <input
+                  type="url"
+                  name="userDataReadGasUrl"
+                  placeholder="https://script.google.com/macros/s/yyyy/exec"
+                  autocomplete="off"
+                />
+                <span class="admin__field-hint">店舗情報を取得するときに利用するWebアプリURLです。</span>
+              </label>
+            </div>
+          </section>
+        </section>
+          <div class="admin__floating-submit">
+            <button type="submit" class="admin__submit admin__submit--floating">設定を保存</button>
           </div>
         </form>
-        <p class="admin__status" data-role="status" hidden></p>
+        <p class="admin__status" data-role="status"></p>
       </main>
     </div>
     <script type="module" src="../src/admin/main.js"></script>

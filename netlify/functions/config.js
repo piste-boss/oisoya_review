@@ -2,7 +2,15 @@ import { getConfigStore } from './_lib/store.js'
 
 const CONFIG_KEY = 'router-config'
 
+export const config = {
+  blobs: true,
+}
+
 const sanitizeString = (value) => (typeof value === 'string' ? value.trim() : '')
+const sanitizeSecretInput = (value) => {
+  const sanitized = sanitizeString(value)
+  return sanitized === '******' ? '' : sanitized
+}
 
 const DEFAULT_PROMPTS = {
   page1: { gasUrl: '', prompt: '' },
@@ -10,11 +18,260 @@ const DEFAULT_PROMPTS = {
   page3: { gasUrl: '', prompt: '' },
 }
 
+const DEFAULT_FORM1 = {
+  title: '体験の満足度を教えてください',
+  description: '星評価と設問にご協力ください。内容は生成されるクチコミのトーンに反映されます。',
+  questions: [
+    {
+      id: 'form1-q1',
+      title: '今回の満足度を教えてください',
+      required: true,
+      type: 'rating',
+      allowMultiple: false,
+      options: [],
+      ratingEnabled: false,
+      placeholder: '',
+      ratingStyle: 'stars',
+      includeInReview: true,
+    },
+    {
+      id: 'form1-q2',
+      title: '良かった点や印象に残ったことを教えてください',
+      required: false,
+      type: 'text',
+      allowMultiple: false,
+      options: [],
+      ratingEnabled: false,
+      placeholder: '例：スタッフの対応、雰囲気、味など',
+      ratingStyle: 'stars',
+      includeInReview: true,
+    },
+  ],
+}
+
+const DEFAULT_FORM2 = {
+  title: '体験に関するアンケートにご協力ください',
+  description: '該当する項目を選択してください。複数回答可の設問はチェックマークで選べます。',
+  questions: [
+    {
+      id: 'form2-q1',
+      title: '今回のご利用目的を教えてください',
+      required: true,
+      type: 'dropdown',
+      allowMultiple: false,
+      options: ['ビジネス', '観光', '記念日', 'その他'],
+      ratingEnabled: false,
+      placeholder: '',
+      ratingStyle: 'stars',
+      includeInReview: true,
+    },
+    {
+      id: 'form2-q2',
+      title: '特に満足したポイントを教えてください',
+      required: false,
+      type: 'checkbox',
+      allowMultiple: true,
+      options: ['スタッフの接客', '施設の清潔さ', 'コストパフォーマンス', '立地アクセス'],
+      ratingEnabled: false,
+      placeholder: '',
+      ratingStyle: 'stars',
+      includeInReview: true,
+    },
+  ],
+}
+
+const DEFAULT_FORM3 = {
+  title: '詳細アンケートにご協力ください',
+  description: '選択式と自由入力の設問で体験を詳しく共有してください。',
+  questions: [
+    {
+      id: 'form3-q1',
+      title: '担当スタッフの対応はいかがでしたか',
+      required: true,
+      type: 'rating',
+      allowMultiple: false,
+      options: [],
+      ratingEnabled: false,
+      placeholder: '',
+      ratingStyle: 'stars',
+      includeInReview: true,
+    },
+    {
+      id: 'form3-q2',
+      title: '特に印象に残ったポイントを教えてください',
+      required: false,
+      type: 'text',
+      allowMultiple: false,
+      options: [],
+      ratingEnabled: false,
+      placeholder: '例：雰囲気、メニュー、スタッフなど',
+      ratingStyle: 'stars',
+      includeInReview: true,
+    },
+  ],
+}
+
+const DEFAULT_SURVEY_RESULTS = {
+  spreadsheetUrl: '',
+  endpointUrl: '',
+  apiKey: '',
+}
+
+const DEFAULT_PROMPT_GENERATOR = {
+  geminiApi: '',
+  prompt: '',
+  references: {
+    light: '',
+    standard: '',
+    platinum: '',
+  },
+}
+
+const DEFAULT_USER_PROFILE = {
+  storeName: '',
+  storeKana: '',
+  industry: '',
+  customers: '',
+  strengths: '',
+  keywords: [],
+  excludeWords: [],
+  nearStation: false,
+  admin: {
+    name: '',
+    email: '',
+    password: '',
+  },
+}
+
+const DEFAULT_USER_DATA_SETTINGS = {
+  spreadsheetUrl: '',
+  submitGasUrl: '',
+  readGasUrl: '',
+}
+
+const sanitizeBooleanFlag = (value, fallback = false) => {
+  if (typeof value === 'boolean') return value
+  if (typeof value === 'number') return !Number.isNaN(value) && value !== 0
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (['true', '1', 'on', 'yes'].includes(normalized)) return true
+    if (['false', '0', 'off', 'no', ''].includes(normalized)) return false
+  }
+  if (value == null) return fallback
+  return Boolean(value)
+}
+
+const sanitizeQuestionType = (value) => {
+  if (value === 'checkbox') return 'checkbox'
+  if (value === 'text') return 'text'
+  if (value === 'rating') return 'rating'
+  return 'dropdown'
+}
+
+const sanitizeRatingStyle = (value) => (value === 'numbers' ? 'numbers' : 'stars')
+
+const sanitizeOptionsArray = (options) => {
+  if (!Array.isArray(options)) return []
+  return options
+    .map((option) => sanitizeString(option))
+    .filter((option) => option.length > 0)
+}
+
+const sanitizeStringArray = (value) => {
+  if (!Array.isArray(value)) return []
+  return value.map((entry) => sanitizeString(entry)).filter((entry) => entry.length > 0)
+}
+
+const sanitizeAdminProfile = (admin = {}, fallback = DEFAULT_USER_PROFILE.admin) => ({
+  name: sanitizeString(admin?.name ?? fallback?.name ?? ''),
+  email: sanitizeString(admin?.email ?? fallback?.email ?? ''),
+  password: sanitizeString(admin?.password ?? fallback?.password ?? ''),
+})
+
+const sanitizeUserProfile = (profile = {}, fallback = DEFAULT_USER_PROFILE) => ({
+  storeName: sanitizeString(profile?.storeName ?? fallback?.storeName ?? ''),
+  storeKana: sanitizeString(profile?.storeKana ?? fallback?.storeKana ?? ''),
+  industry: sanitizeString(profile?.industry ?? fallback?.industry ?? ''),
+  customers: sanitizeString(profile?.customers ?? fallback?.customers ?? ''),
+  strengths: sanitizeString(profile?.strengths ?? fallback?.strengths ?? ''),
+  keywords: sanitizeStringArray(profile?.keywords ?? fallback?.keywords ?? []),
+  excludeWords: sanitizeStringArray(profile?.excludeWords ?? fallback?.excludeWords ?? []),
+  nearStation: sanitizeBooleanFlag(profile?.nearStation, fallback?.nearStation ?? false),
+  admin: sanitizeAdminProfile(profile?.admin, fallback?.admin),
+})
+
+const sanitizeUserDataSettings = (settings = {}, fallback = DEFAULT_USER_DATA_SETTINGS) => ({
+  spreadsheetUrl: sanitizeString(settings?.spreadsheetUrl ?? fallback?.spreadsheetUrl ?? ''),
+  submitGasUrl: sanitizeString(settings?.submitGasUrl ?? fallback?.submitGasUrl ?? ''),
+  readGasUrl: sanitizeString(settings?.readGasUrl ?? fallback?.readGasUrl ?? ''),
+})
+
+const sanitizeFormQuestions = (questions, fallbackQuestions = []) => {
+  if (!Array.isArray(questions)) return fallbackQuestions
+
+  const sanitized = questions
+    .map((question, index) => {
+      const fallbackQuestion = fallbackQuestions[index] || {}
+      const options = sanitizeOptionsArray(question?.options)
+      const fallbackOptions = sanitizeOptionsArray(fallbackQuestion.options)
+
+      const id =
+        sanitizeString(question?.id) ||
+        sanitizeString(fallbackQuestion.id) ||
+        `survey-q-${index + 1}-${Date.now()}`
+
+      const type = sanitizeQuestionType(question?.type || fallbackQuestion.type)
+      const requiresOptions = type === 'dropdown' || type === 'checkbox'
+      const normalizedOptions = requiresOptions
+        ? options.length > 0
+          ? options
+          : fallbackOptions
+        : []
+
+      if (requiresOptions && normalizedOptions.length === 0) {
+        return null
+      }
+
+      const ratingStyle =
+        type === 'rating'
+          ? sanitizeRatingStyle(question?.ratingStyle || fallbackQuestion.ratingStyle || 'stars')
+          : 'stars'
+
+      return {
+        id,
+        title: sanitizeString(question?.title || fallbackQuestion.title || `設問${index + 1}`),
+        required: sanitizeBooleanFlag(question?.required, fallbackQuestion.required ?? true),
+        type,
+        allowMultiple:
+          type === 'checkbox'
+            ? sanitizeBooleanFlag(question?.allowMultiple, fallbackQuestion.allowMultiple ?? false)
+            : false,
+        options: normalizedOptions,
+        ratingEnabled:
+          type === 'rating'
+            ? false
+            : sanitizeBooleanFlag(question?.ratingEnabled, fallbackQuestion.ratingEnabled ?? false),
+        ratingStyle,
+        placeholder:
+          type === 'text'
+            ? sanitizeString(question?.placeholder ?? fallbackQuestion.placeholder ?? '')
+            : '',
+        includeInReview: sanitizeBooleanFlag(
+          question?.includeInReview,
+          fallbackQuestion.includeInReview ?? true,
+        ),
+      }
+    })
+    .filter(Boolean)
+
+  return sanitized.length > 0 ? sanitized : fallbackQuestions
+}
+
 const DEFAULT_CONFIG = {
   labels: {
-    beginner: 'ライトカップ',
-    intermediate: 'ミディアムカップ',
-    advanced: 'フルシティカップ',
+    beginner: '初級',
+    intermediate: '中級',
+    advanced: '上級',
   },
   tiers: {
     beginner: { links: [], nextIndex: 0 },
@@ -29,6 +286,17 @@ const DEFAULT_CONFIG = {
     model: '',
   },
   prompts: DEFAULT_PROMPTS,
+  branding: {
+    faviconDataUrl: '',
+    logoDataUrl: '',
+  },
+  surveyResults: DEFAULT_SURVEY_RESULTS,
+  promptGenerator: DEFAULT_PROMPT_GENERATOR,
+  userProfile: DEFAULT_USER_PROFILE,
+  userDataSettings: DEFAULT_USER_DATA_SETTINGS,
+  form1: DEFAULT_FORM1,
+  form2: DEFAULT_FORM2,
+  form3: DEFAULT_FORM3,
   updatedAt: null,
 }
 
@@ -54,6 +322,16 @@ const toClientConfig = (config) => ({
     geminiApiKey: config.aiSettings?.geminiApiKey ? '******' : '',
     hasGeminiApiKey: Boolean(config.aiSettings?.geminiApiKey),
   },
+  promptGenerator: {
+    prompt: sanitizeString(config.promptGenerator?.prompt),
+    references: {
+      light: sanitizeString(config.promptGenerator?.references?.light),
+      standard: sanitizeString(config.promptGenerator?.references?.standard),
+      platinum: sanitizeString(config.promptGenerator?.references?.platinum),
+    },
+    geminiApi: config.promptGenerator?.geminiApi ? '******' : '',
+    hasGeminiApi: Boolean(config.promptGenerator?.geminiApi),
+  },
 })
 
 const mergePrompts = (incoming = {}, fallback = DEFAULT_PROMPTS) =>
@@ -72,6 +350,19 @@ const mergePrompts = (incoming = {}, fallback = DEFAULT_PROMPTS) =>
     acc[key] = { gasUrl, prompt }
     return acc
   }, {})
+
+const mergePromptGenerator = (incoming = {}, fallback = DEFAULT_PROMPT_GENERATOR) => {
+  const references = {
+    light: sanitizeString(incoming.references?.light ?? fallback.references?.light ?? DEFAULT_PROMPT_GENERATOR.references.light),
+    standard: sanitizeString(incoming.references?.standard ?? fallback.references?.standard ?? DEFAULT_PROMPT_GENERATOR.references.standard),
+    platinum: sanitizeString(incoming.references?.platinum ?? fallback.references?.platinum ?? DEFAULT_PROMPT_GENERATOR.references.platinum),
+  }
+  return {
+    geminiApi: sanitizeString(incoming.geminiApi ?? fallback.geminiApi ?? ''),
+    prompt: sanitizeString(incoming.prompt ?? fallback.prompt ?? ''),
+    references,
+  }
+}
 
 const mergeWithDefault = (config = {}, fallback = DEFAULT_CONFIG) => {
   const mergedLabels = {
@@ -98,6 +389,39 @@ const mergeWithDefault = (config = {}, fallback = DEFAULT_CONFIG) => {
   }
 
   const mergedPrompts = mergePrompts(config.prompts, fallback.prompts)
+  const mergedBranding = {
+    faviconDataUrl: sanitizeString(config.branding?.faviconDataUrl ?? fallback.branding?.faviconDataUrl),
+    logoDataUrl: sanitizeString(config.branding?.logoDataUrl ?? fallback.branding?.logoDataUrl),
+  }
+  const mergedSurveyResults = {
+    spreadsheetUrl: sanitizeString(
+      config.surveyResults?.spreadsheetUrl ??
+        fallback.surveyResults?.spreadsheetUrl ??
+        DEFAULT_SURVEY_RESULTS.spreadsheetUrl,
+    ),
+    endpointUrl: sanitizeString(
+      config.surveyResults?.endpointUrl ??
+        fallback.surveyResults?.endpointUrl ??
+        DEFAULT_SURVEY_RESULTS.endpointUrl,
+    ),
+    apiKey: sanitizeString(
+      config.surveyResults?.apiKey ?? fallback.surveyResults?.apiKey ?? DEFAULT_SURVEY_RESULTS.apiKey,
+    ),
+  }
+  const mergeForm = (key, defaults) => ({
+    title: sanitizeString(config[key]?.title ?? fallback[key]?.title ?? defaults.title),
+    description: sanitizeString(config[key]?.description ?? fallback[key]?.description ?? defaults.description),
+    questions: sanitizeFormQuestions(
+      config[key]?.questions,
+      fallback[key]?.questions ?? defaults.questions,
+    ),
+  })
+  const mergedForm1 = mergeForm('form1', DEFAULT_FORM1)
+  const mergedForm2 = mergeForm('form2', DEFAULT_FORM2)
+  const mergedForm3 = mergeForm('form3', DEFAULT_FORM3)
+  const mergedPromptGenerator = mergePromptGenerator(config.promptGenerator, fallback.promptGenerator)
+  const mergedUserProfile = sanitizeUserProfile(config.userProfile, fallback.userProfile)
+  const mergedUserDataSettings = sanitizeUserDataSettings(config.userDataSettings, fallback.userDataSettings)
 
   return {
     ...DEFAULT_CONFIG,
@@ -106,12 +430,20 @@ const mergeWithDefault = (config = {}, fallback = DEFAULT_CONFIG) => {
     tiers: mergedTiers,
     aiSettings: mergedAiSettings,
     prompts: mergedPrompts,
+    branding: mergedBranding,
+    surveyResults: mergedSurveyResults,
+    promptGenerator: mergedPromptGenerator,
+    userProfile: mergedUserProfile,
+    userDataSettings: mergedUserDataSettings,
+    form1: mergedForm1,
+    form2: mergedForm2,
+    form3: mergedForm3,
     updatedAt: config.updatedAt || fallback.updatedAt || DEFAULT_CONFIG.updatedAt,
   }
 }
 
-export const handler = async (event) => {
-  const store = getConfigStore()
+export const handler = async (event, context) => {
+  const store = getConfigStore(context)
 
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -147,8 +479,11 @@ export const handler = async (event) => {
 
     const newConfig = mergeWithDefault(payload, existingConfig)
 
-  const incomingKey = sanitizeString(payload.aiSettings?.geminiApiKey)
-  newConfig.aiSettings.geminiApiKey = incomingKey || existingConfig.aiSettings.geminiApiKey || ''
+    const incomingKey = sanitizeSecretInput(payload.aiSettings?.geminiApiKey)
+    newConfig.aiSettings.geminiApiKey = incomingKey || existingConfig.aiSettings.geminiApiKey || ''
+    const incomingPromptGeneratorKey = sanitizeSecretInput(payload.promptGenerator?.geminiApi)
+    newConfig.promptGenerator.geminiApi =
+      incomingPromptGeneratorKey || existingConfig.promptGenerator?.geminiApi || ''
     const timestamp = new Date().toISOString()
     newConfig.updatedAt = timestamp
 

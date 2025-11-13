@@ -123,6 +123,23 @@ body::before {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-size: 0.82rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.generator__brand-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 12px 28px rgba(223, 90, 125, 0.25);
+  background: #fff;
+  padding: 0.2rem;
+}
+
+.generator__brand [hidden] {
+  display: none !important;
 }
 
 .generator__page-tag {

@@ -2,6 +2,10 @@ import { getConfigStore } from './_lib/store.js'
 
 const CONFIG_KEY = 'router-config'
 
+export const config = {
+  blobs: true,
+}
+
 const DEFAULT_PROMPTS = {
   page1: { gasUrl: '', prompt: '' },
   page2: { gasUrl: '', prompt: '' },
@@ -12,9 +16,9 @@ const sanitizeString = (value) => (typeof value === 'string' ? value.trim() : ''
 
 const DEFAULT_CONFIG = {
   labels: {
-    beginner: 'ライトカップ',
-    intermediate: 'ミディアムカップ',
-    advanced: 'フルシティカップ',
+    beginner: '初級',
+    intermediate: '中級',
+    advanced: '上級',
   },
   tiers: {
     beginner: { links: [], nextIndex: 0 },
@@ -29,6 +33,10 @@ const DEFAULT_CONFIG = {
     model: '',
   },
   prompts: DEFAULT_PROMPTS,
+  branding: {
+    faviconDataUrl: '',
+    logoDataUrl: '',
+  },
   updatedAt: null,
 }
 
@@ -97,6 +105,10 @@ const mergeWithDefault = (config = {}, fallback = DEFAULT_CONFIG) => {
     tiers: mergedTiers,
     aiSettings: mergedAiSettings,
     prompts: mergePrompts(config.prompts, fallback.prompts),
+    branding: {
+      faviconDataUrl: sanitizeString(config.branding?.faviconDataUrl ?? fallback.branding?.faviconDataUrl),
+      logoDataUrl: sanitizeString(config.branding?.logoDataUrl ?? fallback.branding?.logoDataUrl),
+    },
   }
 }
 
@@ -112,8 +124,8 @@ const persistConfig = async (store, config) => {
   })
 }
 
-export const handler = async (event) => {
-  const store = getConfigStore()
+export const handler = async (event, context) => {
+  const store = getConfigStore(context)
 
   if (event.httpMethod === 'OPTIONS') {
     return {

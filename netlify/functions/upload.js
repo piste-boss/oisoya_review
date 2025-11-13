@@ -1,7 +1,11 @@
 import { createStore } from './_lib/store.js'
 
-export const handler = async () => {
-  const store = createStore('uploads')
+export const config = {
+  blobs: true,
+}
+
+export const handler = async (_event, context) => {
+  const store = createStore('uploads', context)
   await store.set('hello.txt', 'こんにちは Blobs')
   const txt = await store.get('hello.txt', { type: 'text' })
 
