@@ -183,22 +183,13 @@ const setStatus = (message, type = 'info') => {
   statusEl.removeAttribute('hidden')
 }
 
-const applyBrandingLogo = (branding = {}) => {
-  const logoUrl = branding.logoDataUrl || branding.faviconDataUrl || ''
+const applyBrandingLogo = (_branding = {}) => {
   if (brandElements.logo) {
-    if (logoUrl) {
-      brandElements.logo.src = logoUrl
-      brandElements.logo.removeAttribute('hidden')
-    } else {
-      brandElements.logo.setAttribute('hidden', '')
-    }
+    brandElements.logo.setAttribute('hidden', '')
+    brandElements.logo.removeAttribute('src')
   }
   if (brandElements.text) {
-    if (logoUrl) {
-      brandElements.text.setAttribute('hidden', '')
-    } else {
-      brandElements.text.removeAttribute('hidden')
-    }
+    brandElements.text.removeAttribute('hidden')
   }
 }
 

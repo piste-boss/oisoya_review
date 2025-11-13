@@ -125,19 +125,11 @@ const setStatus = (message, type = 'info') => {
 const applyBrandingLogo = (branding = {}) => {
   const logoUrl = branding.logoDataUrl || branding.faviconDataUrl || ''
   if (brandElements.logo) {
-    if (logoUrl) {
-      brandElements.logo.src = logoUrl
-      brandElements.logo.removeAttribute('hidden')
-    } else {
-      brandElements.logo.setAttribute('hidden', '')
-    }
+    brandElements.logo.setAttribute('hidden', '')
+    brandElements.logo.removeAttribute('src')
   }
   if (brandElements.text) {
-    if (logoUrl) {
-      brandElements.text.setAttribute('hidden', '')
-    } else {
-      brandElements.text.removeAttribute('hidden')
-    }
+    brandElements.text.removeAttribute('hidden')
   }
   setDocumentFavicon(logoUrl)
 }

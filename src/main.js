@@ -75,11 +75,6 @@ if (!app) {
 
 const statusEl = app.querySelector('[data-role="status"]')
 const buttons = Array.from(app.querySelectorAll('[data-tier]'))
-const brandElements = {
-  logo: app.querySelector('[data-role="brand-logo"]'),
-  text: app.querySelector('[data-role="brand-text"]'),
-}
-
 if (!statusEl || buttons.length === 0) {
   throw new Error('必要なDOM要素が初期化されていません。')
 }
@@ -110,23 +105,20 @@ const setStatus = (message, type = 'info') => {
   statusEl.dataset.type = type
 }
 
+const brandElements = {
+  logo: app.querySelector('[data-role="brand-logo"]'),
+  text: app.querySelector('[data-role="brand-text"]'),
+}
+
 const applyBrandingLogo = (branding = {}) => {
   const logoUrl = branding.logoDataUrl || branding.faviconDataUrl || ''
   if (brandElements.logo) {
-    if (logoUrl) {
-      brandElements.logo.src = logoUrl
-      brandElements.logo.removeAttribute('hidden')
-    } else {
-      brandElements.logo.setAttribute('hidden', '')
-    }
+    brandElements.logo.setAttribute('hidden', '')
+    brandElements.logo.removeAttribute('src')
   }
 
   if (brandElements.text) {
-    if (logoUrl) {
-      brandElements.text.setAttribute('hidden', '')
-    } else {
-      brandElements.text.removeAttribute('hidden')
-    }
+    brandElements.text.removeAttribute('hidden')
   }
 
   setDocumentFavicon(logoUrl)
