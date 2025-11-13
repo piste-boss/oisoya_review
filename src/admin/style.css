@@ -394,40 +394,6 @@ body {
   body {
     padding-inline: 4rem;
   }
-
-  .admin__menu {
-    align-items: center;
-    margin-bottom: clamp(1rem, 2vw, 2rem);
-  }
-
-  .admin__menu-trigger {
-    display: none;
-  }
-
-  .admin__menu-panel {
-    position: static;
-    opacity: 1;
-    transform: none;
-    pointer-events: auto;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-    width: 100%;
-    background: transparent;
-  }
-
-  .admin__menu-panel .admin__tabs {
-    flex-direction: row;
-    gap: 0.4rem;
-    background: rgba(255, 255, 255, 0.7);
-    box-shadow: inset 0 0 0 1px rgba(149, 118, 89, 0.18);
-    padding: 0.3rem;
-    border-radius: 999px;
-  }
-
-  .admin__menu-panel .admin__tab {
-    width: auto;
-  }
 }
 
 @media (min-width: 720px) {
