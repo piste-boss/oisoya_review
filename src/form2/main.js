@@ -183,13 +183,23 @@ const setStatus = (message, type = 'info') => {
   statusEl.removeAttribute('hidden')
 }
 
-const applyBrandingLogo = (_branding = {}) => {
+const applyBrandingLogo = (branding = {}) => {
+  const headerImageUrl = branding.headerImageDataUrl || ''
   if (brandElements.logo) {
-    brandElements.logo.setAttribute('hidden', '')
-    brandElements.logo.removeAttribute('src')
+    if (headerImageUrl) {
+      brandElements.logo.src = headerImageUrl
+      brandElements.logo.removeAttribute('hidden')
+    } else {
+      brandElements.logo.setAttribute('hidden', '')
+      brandElements.logo.removeAttribute('src')
+    }
   }
   if (brandElements.text) {
-    brandElements.text.removeAttribute('hidden')
+    if (headerImageUrl) {
+      brandElements.text.setAttribute('hidden', '')
+    } else {
+      brandElements.text.removeAttribute('hidden')
+    }
   }
 }
 

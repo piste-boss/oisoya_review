@@ -73,6 +73,35 @@ if (!app) {
   throw new Error('#app が見つかりません。')
 }
 
+const brandElements = {
+  logo: app.querySelector('[data-role="brand-logo"]'),
+  text: app.querySelector('[data-role="brand-text"]'),
+}
+
+const applyBrandingLogo = (branding = {}) => {
+  const headerImageUrl = branding.headerImageDataUrl || ''
+  if (brandElements.logo) {
+    if (headerImageUrl) {
+      brandElements.logo.src = headerImageUrl
+      brandElements.logo.removeAttribute('hidden')
+    } else {
+      brandElements.logo.setAttribute('hidden', '')
+      brandElements.logo.removeAttribute('src')
+    }
+  }
+
+  if (brandElements.text) {
+    if (headerImageUrl) {
+      brandElements.text.setAttribute('hidden', '')
+    } else {
+      brandElements.text.removeAttribute('hidden')
+    }
+  }
+
+  const faviconUrl = branding.logoDataUrl || branding.faviconDataUrl || ''
+  setDocumentFavicon(faviconUrl)
+}
+
 const statusEl = app.querySelector('[data-role="status"]')
 const buttons = Array.from(app.querySelectorAll('[data-tier]'))
 if (!statusEl || buttons.length === 0) {
@@ -103,25 +132,6 @@ const setStatus = (message, type = 'info') => {
   statusEl.removeAttribute('hidden')
   statusEl.textContent = message
   statusEl.dataset.type = type
-}
-
-const brandElements = {
-  logo: app.querySelector('[data-role="brand-logo"]'),
-  text: app.querySelector('[data-role="brand-text"]'),
-}
-
-const applyBrandingLogo = (branding = {}) => {
-  const logoUrl = branding.logoDataUrl || branding.faviconDataUrl || ''
-  if (brandElements.logo) {
-    brandElements.logo.setAttribute('hidden', '')
-    brandElements.logo.removeAttribute('src')
-  }
-
-  if (brandElements.text) {
-    brandElements.text.removeAttribute('hidden')
-  }
-
-  setDocumentFavicon(logoUrl)
 }
 
 const applyLabels = () => {

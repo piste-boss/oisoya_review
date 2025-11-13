@@ -8,6 +8,7 @@ const DEFAULT_LABELS = {
 
 const DEFAULT_FAVICON_PATH = '/vite.svg'
 const MAX_FAVICON_SIZE = 1024 * 1024 // 1MBまで
+const MAX_HEADER_IMAGE_SIZE = 2 * 1024 * 1024 // 2MBまで
 
 let loadedConfig = null
 
@@ -1359,6 +1360,14 @@ const brandingFields = {
   removeButton: app.querySelector('[data-role="favicon-remove"]'),
 }
 
+const headerImageFields = {
+  fileInput: form.elements.brandingHeaderImage,
+  dataInput: form.elements.brandingHeaderImageData,
+  preview: app.querySelector('[data-role="header-image-preview"]'),
+  removeButton: app.querySelector('[data-role="header-image-remove"]'),
+  placeholder: app.querySelector('[data-role="header-image-placeholder"]'),
+}
+
 const applyBrandingToUI = (value) => {
   const dataUrl = typeof value === 'string' ? value : ''
   if (brandingFields.dataInput) {
@@ -1369,6 +1378,29 @@ const applyBrandingToUI = (value) => {
     brandingFields.preview.alt = dataUrl ? '現在のロゴ' : 'デフォルトロゴ'
   }
   setDocumentFavicon(dataUrl)
+}
+
+const applyHeaderImageToUI = (value) => {
+  const dataUrl = typeof value === 'string' ? value : ''
+  if (headerImageFields.dataInput) {
+    headerImageFields.dataInput.value = dataUrl
+  }
+  if (headerImageFields.preview) {
+    if (dataUrl) {
+      headerImageFields.preview.src = dataUrl
+      headerImageFields.preview.removeAttribute('hidden')
+    } else {
+      headerImageFields.preview.setAttribute('hidden', '')
+      headerImageFields.preview.removeAttribute('src')
+    }
+  }
+  if (headerImageFields.placeholder) {
+    if (dataUrl) {
+      headerImageFields.placeholder.setAttribute('hidden', '')
+    } else {
+      headerImageFields.placeholder.removeAttribute('hidden')
+    }
+  }
 }
 
 const handleBrandingFileChange = () => {
@@ -1408,6 +1440,44 @@ const handleBrandingRemove = () => {
 }
 
 const getBrandingValue = () => brandingFields.dataInput?.value?.trim() || ''
+
+const handleHeaderImageFileChange = () => {
+  const file = headerImageFields.fileInput?.files?.[0]
+  if (!file) return
+
+  if (!file.type.startsWith('image/')) {
+    setStatus('ヘッダー画像には画像ファイルを選択してください。', 'error')
+    headerImageFields.fileInput.value = ''
+    return
+  }
+
+  if (file.size > MAX_HEADER_IMAGE_SIZE) {
+    const sizeMB = (MAX_HEADER_IMAGE_SIZE / (1024 * 1024)).toFixed(1)
+    setStatus(`ヘッダー画像は${sizeMB}MB以内のファイルを選択してください。`, 'error')
+    headerImageFields.fileInput.value = ''
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    if (typeof reader.result === 'string') {
+      applyHeaderImageToUI(reader.result)
+    }
+  }
+  reader.onerror = () => {
+    setStatus('ヘッダー画像の読み込みに失敗しました。別のファイルをお試しください。', 'error')
+  }
+  reader.readAsDataURL(file)
+}
+
+const handleHeaderImageRemove = () => {
+  if (headerImageFields.fileInput) {
+    headerImageFields.fileInput.value = ''
+  }
+  applyHeaderImageToUI('')
+}
+
+const getHeaderImageValue = () => headerImageFields.dataInput?.value?.trim() || ''
 
 const setTabMenuState = (isOpen) => {
   if (!tabMenu || !tabMenuTrigger) return
@@ -1529,6 +1599,12 @@ if (brandingFields.fileInput) {
 }
 if (brandingFields.removeButton) {
   brandingFields.removeButton.addEventListener('click', handleBrandingRemove)
+}
+if (headerImageFields.fileInput) {
+  headerImageFields.fileInput.addEventListener('change', handleHeaderImageFileChange)
+}
+if (headerImageFields.removeButton) {
+  headerImageFields.removeButton.addEventListener('click', handleHeaderImageRemove)
 }
 
 if (promptInsertButtons.length > 0 && promptPopover.element) {
@@ -1696,6 +1772,7 @@ function populateForm(config) {
 
   const branding = config.branding || {}
   applyBrandingToUI(branding.logoDataUrl || branding.faviconDataUrl || '')
+  applyHeaderImageToUI(branding.headerImageDataUrl || '')
 }
 
 const loadConfig = async () => {
@@ -1898,11 +1975,13 @@ if (aiFields.geminiApiKey) {
     delete payload.userDataSettings
   }
 
-  if (brandingFields.dataInput) {
+  if (brandingFields.dataInput || headerImageFields.dataInput) {
     const logoDataUrl = getBrandingValue()
+    const headerImageDataUrl = getHeaderImageValue()
     payload.branding = {
       ...payload.branding,
       logoDataUrl,
+      headerImageDataUrl,
       faviconDataUrl: logoDataUrl || payload.branding?.faviconDataUrl || '',
     }
   }

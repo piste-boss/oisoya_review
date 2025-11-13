@@ -201,6 +201,36 @@
                 </div>
               </div>
             </section>
+            <section class="admin__card">
+              <h2>ヘッダー画像</h2>
+              <p class="admin__hint">各ページのヘッダーに表示される画像を設定できます。未設定の場合は店舗名テキストが表示されます。</p>
+              <div class="admin__brand admin__brand--header">
+                <div class="admin__brand-preview admin__brand-preview--header" aria-live="polite">
+                  <img
+                    src=""
+                    alt="現在のヘッダー画像"
+                    width="160"
+                    height="80"
+                    data-role="header-image-preview"
+                    hidden
+                  />
+                  <p class="admin__brand-placeholder" data-role="header-image-placeholder">
+                    現在ヘッダー画像は未設定です。
+                  </p>
+                </div>
+                <div class="admin__brand-actions">
+                  <label class="admin__field admin__field--file">
+                    <span class="admin__field-label">ヘッダー画像</span>
+                    <input type="file" name="brandingHeaderImage" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/*" />
+                    <span class="admin__field-hint">横長の画像（最大2MB程度）を推奨します。</span>
+                  </label>
+                  <div class="admin__brand-buttons">
+                    <button type="button" class="admin__text-button" data-role="header-image-remove">画像をリセット</button>
+                  </div>
+                  <input type="hidden" name="brandingHeaderImageData" />
+                </div>
+              </div>
+            </section>
           </section>
           <section class="admin__panel is-active" data-tab-panel="labels">
 

@@ -289,6 +289,7 @@ const DEFAULT_CONFIG = {
   branding: {
     faviconDataUrl: '',
     logoDataUrl: '',
+    headerImageDataUrl: '',
   },
   surveyResults: DEFAULT_SURVEY_RESULTS,
   promptGenerator: DEFAULT_PROMPT_GENERATOR,
@@ -392,6 +393,9 @@ const mergeWithDefault = (config = {}, fallback = DEFAULT_CONFIG) => {
   const mergedBranding = {
     faviconDataUrl: sanitizeString(config.branding?.faviconDataUrl ?? fallback.branding?.faviconDataUrl),
     logoDataUrl: sanitizeString(config.branding?.logoDataUrl ?? fallback.branding?.logoDataUrl),
+    headerImageDataUrl: sanitizeString(
+      config.branding?.headerImageDataUrl ?? fallback.branding?.headerImageDataUrl,
+    ),
   }
   const mergedSurveyResults = {
     spreadsheetUrl: sanitizeString(
