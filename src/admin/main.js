@@ -1608,6 +1608,8 @@ const activateTab = (target) => {
     const isActive = panel.dataset.tabPanel === target
     panel.classList.toggle('is-active', isActive)
   })
+
+  hidePromptPopover()
 }
 
 tabButtons.forEach((button) => {
