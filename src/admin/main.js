@@ -92,9 +92,9 @@ const QR_PAGE_TARGETS = [
 ]
 
 const QR_SIZE_MAP = {
-  s: { label: 'S', px: 256 },
-  m: { label: 'M', px: 512 },
-  l: { label: 'L', px: 1024 },
+  s: { label: 'S', px: 192 },
+  m: { label: 'M', px: 384 },
+  l: { label: 'L', px: 768 },
 }
 
 const QR_FORMATS = {
