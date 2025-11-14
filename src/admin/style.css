@@ -279,6 +279,58 @@ body {
   gap: 1rem;
 }
 
+.admin__prompt-popover {
+  position: absolute;
+  z-index: 9999;
+  min-width: 220px;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(149, 118, 89, 0.25);
+  background: #fffdf9;
+  box-shadow: 0 18px 38px rgba(41, 21, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: auto;
+  transform-origin: top center;
+}
+
+.admin__prompt-popover p {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.admin__prompt-popover-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin__prompt-popover [data-role='prompt-popover-option'] {
+  border: 1px solid rgba(197, 58, 50, 0.35);
+  border-radius: 12px;
+  padding: 0.55rem 0.9rem;
+  background: #fff;
+  font-weight: 600;
+  color: var(--accent-strong);
+  font-size: 1rem;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.admin__prompt-popover [data-role='prompt-popover-option']:hover:not(:disabled),
+.admin__prompt-popover [data-role='prompt-popover-option']:focus-visible {
+  background: rgba(197, 58, 50, 0.07);
+  border-color: var(--accent-strong);
+  outline: none;
+}
+
+.admin__prompt-popover [data-role='prompt-popover-option']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .admin__hint {
   margin: 0;
   color: var(--text-tertiary);

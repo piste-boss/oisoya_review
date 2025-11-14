@@ -702,10 +702,23 @@ const hidePromptPopover = () => {
 }
 
 const showPromptPopover = (button, promptKey) => {
-  if (!promptPopover.element) return
+  if (!promptPopover.element || !button) return
+  const wasHidden = promptPopover.element.hidden
+  if (wasHidden) {
+    promptPopover.element.hidden = false
+  }
   const rect = button.getBoundingClientRect()
-  promptPopover.element.style.top = `${window.scrollY + rect.bottom + 8}px`
-  promptPopover.element.style.left = `${window.scrollX + rect.left}px`
+  const popoverRect = promptPopover.element.getBoundingClientRect()
+  const popoverWidth = popoverRect.width || promptPopover.element.offsetWidth || rect.width || 0
+  const viewportWidth = document.documentElement.clientWidth || window.innerWidth || popoverWidth
+  const horizontalPadding = 16
+  const buttonCenter = rect.left + rect.width / 2
+  const clampedLeft = Math.max(
+    horizontalPadding,
+    Math.min(viewportWidth - popoverWidth - horizontalPadding, buttonCenter - popoverWidth / 2),
+  )
+  promptPopover.element.style.top = `${window.scrollY + rect.bottom + 12}px`
+  promptPopover.element.style.left = `${window.scrollX + clampedLeft}px`
   promptPopover.element.hidden = false
   promptPopover.currentKey = promptKey
   promptPopover.anchor = button
