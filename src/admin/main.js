@@ -1721,12 +1721,16 @@ if (promptInsertButtons.length > 0 && promptPopover.element) {
     })
   })
 
-  document.addEventListener('click', (event) => {
+  const handlePromptPopoverDismiss = (event) => {
     if (!promptPopover.element || promptPopover.element.hidden) return
-    if (promptPopover.element.contains(event.target)) return
-    if (event.target.closest('[data-role="prompt-insert"]')) return
+    const target = event.target
+    if (promptPopover.element.contains(target)) return
+    if (target.closest?.('[data-role="prompt-insert"]')) return
     hidePromptPopover()
-  })
+  }
+
+  document.addEventListener('pointerdown', handlePromptPopoverDismiss)
+  document.addEventListener('click', handlePromptPopoverDismiss)
 
   window.addEventListener('scroll', () => {
     if (!promptPopover.element || promptPopover.element.hidden) return
