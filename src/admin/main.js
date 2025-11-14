@@ -1525,6 +1525,39 @@ const setStatus = (message, type = 'info', options = {}) => {
   }
 }
 
+const getPromptReferenceByTier = (tier) => {
+  if (!tier || !promptGeneratorData?.references) {
+    return ''
+  }
+  const reference = promptGeneratorData.references[tier]
+  return typeof reference === 'string' ? reference.trim() : ''
+}
+
+const insertPromptTemplateReference = (
+  tier,
+  targetField,
+  {
+    successMessage = 'テンプレートを挿入しました。',
+    emptyMessage = '選択したテンプレートが登録されていません。管理画面で登録してください。',
+  } = {},
+) => {
+  if (!targetField?.prompt) {
+    return false
+  }
+  const template = getPromptReferenceByTier(tier)
+  if (!template) {
+    if (emptyMessage) {
+      setStatus(emptyMessage, 'error')
+    }
+    return false
+  }
+  targetField.prompt.value = template
+  if (successMessage) {
+    setStatus(successMessage, 'success')
+  }
+  return true
+}
+
 const initializeQrControls = () => {
   if (!qrControls.preview) return
 
@@ -1613,7 +1646,7 @@ if (promptInsertButtons.length > 0 && promptPopover.element) {
       event.preventDefault()
       const promptKey = button.dataset.promptKey
       if (!promptKey) return
-      if (!promptGeneratorData.hasGeminiApi) {
+      if (!promptGeneratorData.hasGeminiApi && !isUserApp) {
         setStatus('プロンプトジェネレーターのGemini APIキーが未設定です。管理画面で登録してください。', 'error')
         hidePromptPopover()
         return
@@ -1635,6 +1668,22 @@ if (promptInsertButtons.length > 0 && promptPopover.element) {
         hidePromptPopover()
         return
       }
+      const insertTemplateFallback = (messages = {}) =>
+        insertPromptTemplateReference(tier, targetField, {
+          successMessage:
+            typeof messages.successMessage === 'string' ? messages.successMessage : 'テンプレートを挿入しました。',
+          emptyMessage:
+            typeof messages.emptyMessage === 'string'
+              ? messages.emptyMessage
+              : '選択したテンプレートが登録されていません。管理画面で登録してください。',
+        })
+
+      if (!promptGeneratorData.hasGeminiApi) {
+        hidePromptPopover()
+        insertTemplateFallback()
+        return
+      }
+
       option.disabled = true
       const userContextResult = await fetchUserContextTextFromGas()
       if (userContextResult.status === 'error') {
@@ -1653,6 +1702,8 @@ if (promptInsertButtons.length > 0 && promptPopover.element) {
       hidePromptPopover()
       if (generatedPrompt) {
         targetField.prompt.value = generatedPrompt
+      } else if (isUserApp) {
+        insertTemplateFallback({ successMessage: '' })
       }
     })
   })
