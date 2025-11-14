@@ -40,6 +40,10 @@ body {
     linear-gradient(150deg, var(--surface) 0%, var(--surface-alt) 48%, #ffe0e4 100%);
 }
 
+.is-hidden {
+  display: none !important;
+}
+
 #admin-app {
   width: min(960px, 100%);
   display: flex;
