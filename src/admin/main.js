@@ -1036,7 +1036,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
     typeField.appendChild(typeSelect)
     const typeHint = document.createElement('span')
     typeHint.className = 'admin__field-hint'
-    typeHint.textContent = '数字選択を選ぶと5段階評価の設問になります。'
+    typeHint.textContent = ''
     typeField.appendChild(typeHint)
     fieldsWrapper.appendChild(typeField)
 
@@ -1204,8 +1204,8 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
     wrapper.appendChild(settings)
 
     const helper = document.createElement('p')
-    helper.className = 'admin__options-hint'
-    helper.textContent = '数字選択を選ぶと5段階（星 or 数字）のボタンが表示されます。'
+    helper.className = 'admin__options-hint is-hidden'
+    helper.textContent = ''
     wrapper.appendChild(helper)
 
     return wrapper

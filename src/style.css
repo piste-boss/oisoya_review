@@ -204,6 +204,7 @@ body::before {
   flex-direction: column;
   gap: 0.8rem;
   list-style: none;
+  display: none;
 }
 
 .router__story li {
