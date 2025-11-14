@@ -11,7 +11,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../src/admin/style.css" />
-    <title>サクラト。カフェ | システム設定</title>
+    <title>管理ページ</title>
   </head>
   <body>
     <div id="admin-app" data-app-role="admin">
@@ -20,13 +20,9 @@
       </noscript>
       <main class="admin">
         <header class="admin__header">
-          <p class="admin__badge">サクラト。カフェ 管理ページ</p>
+          <p class="admin__badge">管理ページ</p>
           <h1 class="admin__title">システム設定</h1>
-          <p class="admin__lead">
-            Gemini API キーやアンケート送信先など、セキュリティに関わる設定を編集します。ルータ／アンケート／AI プロンプトは
-            <a href="/user/">ユーザー設定ページ</a>
-            から調整してください。
-          </p>
+          <p class="admin__lead"><a href="/user/">ユーザー設定ページはこちら</a></p>
         </header>
         <div class="admin__menu" data-role="tab-menu-container">
           <button
@@ -52,9 +48,7 @@
           <section class="admin__panel is-active" data-tab-panel="ai">
             <section class="admin__card">
               <h2>トップページリンク先</h2>
-              <p class="admin__hint">
-                1行につき1つのURLを登録します。ルータの各ボタンは上から順番に自動案内され、末尾まで到達すると先頭に戻ります。
-              </p>
+              <p class="admin__hint">1行につき1つのURLを登録します。</p>
               <div class="admin__fields">
                 <label class="admin__field">
                   <span class="admin__field-label">アンケート1リンク</span>
@@ -84,9 +78,6 @@
             </section>
             <section class="admin__card">
               <h2>口コミAI設定</h2>
-              <p class="admin__hint">
-                Gemini API・Googleマップの情報を設定します。保存後は口コミ生成ページに反映されます。
-              </p>
               <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
                   <span class="admin__field-label">モデル名</span>
@@ -106,15 +97,11 @@
                     placeholder="例: AIza..."
                     autocomplete="off"
                   />
-                  <span class="admin__field-hint">Gemini API のシークレットキーを入力してください。</span>
                 </label>
               </div>
             </section>
             <section class="admin__card admin__card--results">
               <h2>アンケートデータ</h2>
-              <p class="admin__hint">
-                各アンケートの回答取得に使う GAS アプリURL を設定します。プロンプト設定タブでは指示文のみ編集します。
-              </p>
               <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
                   <span class="admin__field-label">アンケート1 GAS URL</span>
@@ -147,7 +134,6 @@
             </section>
             <section class="admin__card admin__card--results">
               <h2>アンケート送信App</h2>
-              <p class="admin__hint">アンケート1〜3の回答を保存するバックエンドappのエンドポイントを設定します。</p>
               <div class="admin__fields admin__fields--single">
                 <label class="admin__field">
                   <span class="admin__field-label">送信先API(URL)</span>
@@ -157,14 +143,10 @@
                     placeholder="https://script.google.com/macros/s/.../exec"
                     autocomplete="off"
                   />
-                  <span class="admin__field-hint">
-                    GAS などで公開した Web API の URL。アンケート1/2/3 は回答送信時に <code>{ formKey, answers, metadata }</code> を POST します。
-                  </span>
                 </label>
                 <label class="admin__field">
                   <span class="admin__field-label">APIキー（任意）</span>
                   <input type="text" name="surveyApiKey" placeholder="例: Bearer 用シークレット" autocomplete="off" />
-                  <span class="admin__field-hint">送信時に <code>Authorization: Bearer {キー}</code> を付与します。未入力の場合はヘッダーを省略します。</span>
                 </label>
               </div>
             </section>
@@ -172,9 +154,6 @@
           <section class="admin__panel" data-tab-panel="prompt-generator">
           <section class="admin__card">
             <h2>プロンプトジェネレーター</h2>
-            <p class="admin__hint">
-              口コミ生成用のGemini APIと基本プロンプトを設定します。ここで入力した値は運用チーム向けのジェネレーターで利用されます。
-            </p>
             <div class="admin__fields admin__fields--single">
               <label class="admin__field">
                 <span class="admin__field-label">Gemini API</span>
@@ -192,7 +171,6 @@
           </section>
           <section class="admin__card">
             <h2>参考文面入力欄</h2>
-            <p class="admin__hint">各コースにあわせた参考文面を保存しておくと、スタッフがすぐに呼び出せます。</p>
             <div class="admin__fields admin__fields--single">
               <label class="admin__field">
                 <span class="admin__field-label">ライト</span>
@@ -243,7 +221,6 @@
                   placeholder="https://script.google.com/macros/s/xxxx/exec"
                   autocomplete="off"
                 />
-                <span class="admin__field-hint">店舗情報を保存するWebアプリURLを登録してください。</span>
               </label>
               <label class="admin__field">
                 <span class="admin__field-label">店舗情報読み取りGAS URL</span>
@@ -253,7 +230,6 @@
                   placeholder="https://script.google.com/macros/s/yyyy/exec"
                   autocomplete="off"
                 />
-                <span class="admin__field-hint">店舗情報を取得するときに利用するWebアプリURLです。</span>
               </label>
             </div>
           </section>

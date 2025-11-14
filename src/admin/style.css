@@ -386,7 +386,7 @@ body {
   background: var(--input-bg);
   transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   color: var(--text-primary);
-  width: min(87.5%, 40rem);
+  width: min(100%, 50rem);
 }
 
 .admin__field textarea {
