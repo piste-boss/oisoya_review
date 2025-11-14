@@ -995,8 +995,8 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
 
     const removeButton = document.createElement('button')
     removeButton.type = 'button'
-    removeButton.className = 'admin__icon-button'
-    removeButton.textContent = '削除'
+    removeButton.className = 'admin__icon-button admin__icon-button--danger'
+    removeButton.innerHTML = '<span aria-hidden="true" class="admin__icon-trash">🗑</span><span>削除</span>'
     removeButton.addEventListener('click', () => removeQuestion(question.id))
     header.appendChild(removeButton)
 

@@ -537,6 +537,24 @@ body {
   outline: none;
 }
 
+.admin__icon-button--danger {
+  border-color: rgba(199, 108, 136, 0.8);
+  background: rgba(199, 108, 136, 0.08);
+  color: #a53957;
+}
+
+.admin__icon-button--danger:hover,
+.admin__icon-button--danger:focus-visible {
+  background: rgba(199, 108, 136, 0.18);
+  border-color: #c76c88;
+  color: #7c1f36;
+}
+
+.admin__icon-trash {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
 .admin__question-actions .admin__icon-button {
   padding: 0.9rem 2.1rem;
   font-size: 1.05rem;
@@ -646,23 +664,45 @@ body {
   box-shadow: 0 14px 28px rgba(165, 40, 35, 0.22);
 }
 
+.admin__floating-submit {
+  position: fixed;
+  right: clamp(1rem, 4vw, 2.4rem);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(1rem, 3vw, 2rem));
+  z-index: 1200;
+  display: flex;
+  justify-content: flex-end;
+  width: auto;
+  pointer-events: none;
+}
+
+.admin__floating-submit .admin__submit--floating {
+  pointer-events: auto;
+  min-width: 180px;
+  border-radius: 999px;
+  box-shadow: 0 28px 48px rgba(165, 40, 35, 0.32);
+}
+
 .admin__status {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
   margin: 0;
-  padding: 0.9rem 1.25rem;
-  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  border-radius: 18px;
   font-size: 0.95rem;
   line-height: 1.55;
-  background: var(--accent-soft);
+  background: #fff8f5;
   color: var(--accent-strong);
-  box-shadow: 0 16px 32px rgba(197, 58, 50, 0.12);
+  box-shadow: 0 30px 60px rgba(58, 42, 22, 0.2);
   opacity: 0;
-  transform: translateY(6px);
   transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 1300;
 }
 
 .admin__status--visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .admin__status[data-type='success'] {
