@@ -425,6 +425,80 @@ body {
   box-shadow: none;
 }
 
+.admin__toggle {
+  --toggle-width: 48px;
+  --toggle-height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.admin__toggle-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.admin__toggle-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.admin__toggle-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin__toggle-track {
+  position: relative;
+  width: var(--toggle-width);
+  height: var(--toggle-height);
+  border-radius: 999px;
+  background: rgba(197, 58, 50, 0.3);
+  transition: background 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.admin__toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(var(--toggle-height) - 6px);
+  height: calc(var(--toggle-height) - 6px);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease;
+}
+
+.admin__toggle-input:checked + .admin__toggle-track {
+  background: var(--accent-strong);
+}
+
+.admin__toggle-input:checked + .admin__toggle-track .admin__toggle-thumb {
+  transform: translateX(calc(var(--toggle-width) - var(--toggle-height)));
+}
+
+.admin__toggle-status {
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.admin__toggle--compact {
+  --toggle-width: 42px;
+  --toggle-height: 22px;
+  gap: 0.6rem;
+}
+
+.admin__toggle--compact .admin__toggle-control {
+  gap: 0.35rem;
+}
+
 .admin__question-actions {
   display: flex;
   justify-content: flex-start;
@@ -498,12 +572,17 @@ body {
 }
 
 .admin__question-settings {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.9rem;
+  align-items: center;
   margin-top: 0.5rem;
   padding-top: 1rem;
   border-top: 1px dashed rgba(149, 118, 89, 0.35);
+}
+
+.admin__question-settings > * {
+  flex: 0 0 auto;
 }
 
 .admin__checkbox {
