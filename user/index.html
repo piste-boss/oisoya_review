@@ -462,9 +462,7 @@
           <section class="admin__panel" data-tab-panel="qr">
             <section class="admin__card admin__card--qr">
               <h2>QRコード作成</h2>
-              <p class="admin__hint">
-                トップページ・フォームページへのQRコードを作成し、PNG/JPGでダウンロードできます。紙面掲載時の想定サイズに合わせてS/M/Lから選んでください。
-              </p>
+              <p class="admin__hint">トップページ、アンケートページのQRコードを作成します。</p>
               <div class="admin__fields admin__fields--single admin__qr-controls">
                 <label class="admin__field">
                   <span class="admin__field-label">対象ページ</span>
@@ -479,11 +477,10 @@
                 <label class="admin__field">
                   <span class="admin__field-label">出力サイズ</span>
                   <select name="qrSize">
-                    <option value="s">S（192px）</option>
-                    <option value="m" selected>M（384px）</option>
-                    <option value="l">L（768px）</option>
+                    <option value="s">S（96px）</option>
+                    <option value="m" selected>M（144px）</option>
+                    <option value="l">L（192px）</option>
                   </select>
-                  <span class="admin__field-hint">印刷サイズに応じてピクセル数を選択してください。</span>
                 </label>
                 <label class="admin__field">
                   <span class="admin__field-label">ファイル形式</span>
@@ -498,9 +495,8 @@
                 <p>選択内容に応じたQRコードがここに表示されます。</p>
               </div>
               <div class="admin__qr-actions">
-                <button type="button" class="admin__icon-button" data-role="qr-refresh">プレビュー更新</button>
                 <button type="button" class="admin__submit admin__submit--compact" data-role="qr-download">
-                  QRコードをダウンロード
+                  ダウンロード
                 </button>
               </div>
             </section>
