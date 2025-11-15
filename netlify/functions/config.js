@@ -18,6 +18,21 @@ const DEFAULT_PROMPTS = {
   page3: { gasUrl: '', prompt: '' },
 }
 
+const DEFAULT_ROUTER_DESCRIPTIONS = {
+  beginner: {
+    highlight: '所要時間 30秒',
+    description: '5段階評価のみでひとこと生成',
+  },
+  intermediate: {
+    highlight: '所要時間 60秒',
+    description: '選択式のアンケートに答えて100文字程度の文章生成',
+  },
+  advanced: {
+    highlight: '所要時間 90秒',
+    description: 'アンケートに文章回答して200文字程度の文章生成',
+  },
+}
+
 const DEFAULT_FORM1 = {
   title: '体験の満足度を教えてください',
   description: '星評価と設問にご協力ください。内容は生成されるクチコミのトーンに反映されます。',
@@ -182,6 +197,24 @@ const sanitizeStringArray = (value) => {
   return value.map((entry) => sanitizeString(entry)).filter((entry) => entry.length > 0)
 }
 
+const sanitizeRouterDescriptionEntry = (entry = {}, fallback = {}) => ({
+  highlight: sanitizeString(entry?.highlight ?? fallback?.highlight ?? ''),
+  description: sanitizeString(entry?.description ?? fallback?.description ?? ''),
+})
+
+const mergeRouterDescriptions = (
+  incoming = {},
+  fallback = DEFAULT_ROUTER_DESCRIPTIONS,
+) =>
+  Object.keys(DEFAULT_ROUTER_DESCRIPTIONS).reduce((acc, key) => {
+    const incomingEntry = Object.prototype.hasOwnProperty.call(incoming || {}, key)
+      ? incoming[key]
+      : undefined
+    const fallbackEntry = fallback?.[key] || DEFAULT_ROUTER_DESCRIPTIONS[key]
+    acc[key] = sanitizeRouterDescriptionEntry(incomingEntry, fallbackEntry)
+    return acc
+  }, {})
+
 const sanitizeAdminProfile = (admin = {}, fallback = DEFAULT_USER_PROFILE.admin) => ({
   name: sanitizeString(admin?.name ?? fallback?.name ?? ''),
   email: sanitizeString(admin?.email ?? fallback?.email ?? ''),
@@ -291,6 +324,7 @@ const DEFAULT_CONFIG = {
     logoDataUrl: '',
     headerImageDataUrl: '',
   },
+  routerDescriptions: DEFAULT_ROUTER_DESCRIPTIONS,
   surveyResults: DEFAULT_SURVEY_RESULTS,
   promptGenerator: DEFAULT_PROMPT_GENERATOR,
   userProfile: DEFAULT_USER_PROFILE,
@@ -318,6 +352,10 @@ const jsonResponse = (statusCode, payload = {}) => ({
 
 const toClientConfig = (config) => ({
   ...config,
+  routerDescriptions: mergeRouterDescriptions(
+    config.routerDescriptions,
+    DEFAULT_ROUTER_DESCRIPTIONS,
+  ),
   aiSettings: {
     ...config.aiSettings,
     geminiApiKey: config.aiSettings?.geminiApiKey ? '******' : '',
@@ -397,6 +435,10 @@ const mergeWithDefault = (config = {}, fallback = DEFAULT_CONFIG) => {
       config.branding?.headerImageDataUrl ?? fallback.branding?.headerImageDataUrl,
     ),
   }
+  const mergedRouterDescriptions = mergeRouterDescriptions(
+    config.routerDescriptions,
+    fallback.routerDescriptions ?? DEFAULT_ROUTER_DESCRIPTIONS,
+  )
   const mergedSurveyResults = {
     spreadsheetUrl: sanitizeString(
       config.surveyResults?.spreadsheetUrl ??
@@ -435,6 +477,7 @@ const mergeWithDefault = (config = {}, fallback = DEFAULT_CONFIG) => {
     aiSettings: mergedAiSettings,
     prompts: mergedPrompts,
     branding: mergedBranding,
+    routerDescriptions: mergedRouterDescriptions,
     surveyResults: mergedSurveyResults,
     promptGenerator: mergedPromptGenerator,
     userProfile: mergedUserProfile,

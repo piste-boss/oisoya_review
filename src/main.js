@@ -4,6 +4,21 @@ const DEFAULT_LABELS = {
   advanced: 'フルシティカップ',
 }
 
+const DEFAULT_ROUTER_DESCRIPTIONS = {
+  beginner: {
+    highlight: '所要時間 30秒',
+    description: '5段階評価のみでひとこと生成',
+  },
+  intermediate: {
+    highlight: '所要時間 60秒',
+    description: '選択式のアンケートに答えて100文字程度の文章生成',
+  },
+  advanced: {
+    highlight: '所要時間 90秒',
+    description: 'アンケートに文章回答して200文字程度の文章生成',
+  },
+}
+
 const DEFAULT_FAVICON_PATH = '/vite.svg'
 
 const CONFIG_CACHE_KEY = 'oisoya_review_config_cache'
@@ -109,7 +124,7 @@ const applyBrandingLogo = (branding = {}) => {
 
 const statusEl = app.querySelector('[data-role="status"]')
 const buttons = Array.from(app.querySelectorAll('[data-tier]'))
-if (!statusEl || buttons.length === 0) {
+if (buttons.length === 0) {
   throw new Error('必要なDOM要素が初期化されていません。')
 }
 
@@ -125,8 +140,15 @@ let labels = {
   ...DEFAULT_LABELS,
   ...(cachedConfig?.labels ?? {}),
 }
+let routerDescriptions = {
+  ...DEFAULT_ROUTER_DESCRIPTIONS,
+  ...(cachedConfig?.routerDescriptions ?? {}),
+}
 
 const setStatus = (message, type = 'info') => {
+  if (!statusEl) {
+    return
+  }
   if (!message) {
     statusEl.setAttribute('hidden', '')
     statusEl.textContent = ''
@@ -144,6 +166,27 @@ const applyLabels = () => {
     const tierKey = button.dataset.tier
     const label = labels[tierKey] || DEFAULT_LABELS[tierKey] || tierKey
     button.querySelector('.router__button-label').textContent = label
+  })
+}
+
+const applyRouterDescriptions = () => {
+  buttons.forEach((button) => {
+    const tierKey = button.dataset.tier
+    const entry =
+      routerDescriptions[tierKey] || DEFAULT_ROUTER_DESCRIPTIONS[tierKey] || { highlight: '', description: '' }
+    const fallback = DEFAULT_ROUTER_DESCRIPTIONS[tierKey] || { highlight: '', description: '' }
+    const highlightEl = button.querySelector('[data-role="button-meta-highlight"]')
+    const descriptionEl = button.querySelector('[data-role="button-meta-description"]')
+    if (highlightEl) {
+      const text = entry.highlight ?? fallback.highlight ?? ''
+      highlightEl.textContent = text
+      highlightEl.toggleAttribute('hidden', !text)
+    }
+    if (descriptionEl) {
+      const text = entry.description ?? fallback.description ?? ''
+      descriptionEl.textContent = text
+      descriptionEl.toggleAttribute('hidden', !text)
+    }
   })
 }
 
@@ -206,8 +249,13 @@ const resetUIState = () => {
     ...DEFAULT_LABELS,
     ...(latestCached?.labels ?? {}),
   }
+  routerDescriptions = {
+    ...DEFAULT_ROUTER_DESCRIPTIONS,
+    ...(latestCached?.routerDescriptions ?? {}),
+  }
   applyBrandingLogo(latestCached?.branding)
   applyLabels()
+  applyRouterDescriptions()
 }
 
 const loadConfig = async () => {
@@ -223,6 +271,16 @@ const loadConfig = async () => {
       writeCachedConfig(payload)
       applyBrandingLogo(payload.branding)
     }
+    if (payload?.routerDescriptions) {
+      routerDescriptions = {
+        ...DEFAULT_ROUTER_DESCRIPTIONS,
+        ...payload.routerDescriptions,
+      }
+      applyRouterDescriptions()
+    }
+    if (!payload?.routerDescriptions) {
+      applyRouterDescriptions()
+    }
     setStatus('')
   } catch (error) {
     console.warn(error)
@@ -232,12 +290,18 @@ const loadConfig = async () => {
       ...(fallbackConfig?.labels ?? {}),
     }
     applyLabels()
+    routerDescriptions = {
+      ...DEFAULT_ROUTER_DESCRIPTIONS,
+      ...(fallbackConfig?.routerDescriptions ?? {}),
+    }
+    applyRouterDescriptions()
     applyBrandingLogo(fallbackConfig?.branding)
     setStatus(error.message, 'warn')
   }
 }
 
 applyLabels()
+applyRouterDescriptions()
 loadConfig()
 
 window.addEventListener('pageshow', (event) => {
@@ -248,6 +312,11 @@ window.addEventListener('pageshow', (event) => {
       ...(latestCached?.labels ?? {}),
     }
     applyLabels()
+    routerDescriptions = {
+      ...DEFAULT_ROUTER_DESCRIPTIONS,
+      ...(latestCached?.routerDescriptions ?? {}),
+    }
+    applyRouterDescriptions()
     applyBrandingLogo(latestCached?.branding)
     resetUIState()
     loadConfig()

@@ -6,11 +6,30 @@ const DEFAULT_LABELS = {
   advanced: '上級',
 }
 
+const DEFAULT_ROUTER_DESCRIPTIONS = {
+  beginner: {
+    highlight: '所要時間 30秒',
+    description: '5段階評価のみでひとこと生成',
+  },
+  intermediate: {
+    highlight: '所要時間 60秒',
+    description: '選択式のアンケートに答えて100文字程度の文章生成',
+  },
+  advanced: {
+    highlight: '所要時間 90秒',
+    description: 'アンケートに文章回答して200文字程度の文章生成',
+  },
+}
+
 const DEFAULT_FAVICON_PATH = '/vite.svg'
 const MAX_FAVICON_SIZE = 1024 * 1024 // 1MBまで
 const MAX_HEADER_IMAGE_SIZE = 2 * 1024 * 1024 // 2MBまで
 
 let loadedConfig = null
+const brandingData = {
+  logoDataUrl: '',
+  headerImageDataUrl: '',
+}
 
 const TIERS = [
   {
@@ -235,6 +254,14 @@ const sanitizeOptionsList = (value) =>
     .map((line) => line.trim())
     .filter(Boolean)
 
+const getRouterDescriptionDefaults = (key) =>
+  DEFAULT_ROUTER_DESCRIPTIONS[key] || { highlight: '', description: '' }
+
+const normalizeRouterDescriptionEntry = (entry, fallback = { highlight: '', description: '' }) => ({
+  highlight: typeof entry?.highlight === 'string' ? entry.highlight : fallback.highlight || '',
+  description: typeof entry?.description === 'string' ? entry.description : fallback.description || '',
+})
+
 const app = document.querySelector('#admin-app')
 if (!app) {
   throw new Error('#admin-app が見つかりません。')
@@ -258,6 +285,14 @@ if (!form || !statusEl) {
 
 const tabButtons = Array.from(app.querySelectorAll('[data-tab-target]'))
 const tabPanels = Array.from(app.querySelectorAll('[data-tab-panel]'))
+
+const routerDescriptionFields = TIERS.reduce((acc, { key }) => {
+  acc[key] = {
+    highlight: form.elements[`${key}Highlight`],
+    description: form.elements[`${key}Description`],
+  }
+  return acc
+}, {})
 
 const qrControls = {
   page: form.elements.qrPage,
@@ -354,6 +389,40 @@ const getStoredUserProfileValue = (key) =>
 
 const getStoredUserDataSetting = (key) =>
   typeof loadedConfig?.userDataSettings?.[key] === 'string' ? loadedConfig.userDataSettings[key] : ''
+
+const getRouterDescriptionsFromConfig = (config = {}) => {
+  const source = config.routerDescriptions || {}
+  return TIERS.reduce((acc, { key }) => {
+    acc[key] = normalizeRouterDescriptionEntry(
+      source[key],
+      getRouterDescriptionDefaults(key),
+    )
+    return acc
+  }, {})
+}
+
+const getRouterDescriptionsPayload = () => {
+  const existing = getRouterDescriptionsFromConfig(
+    loadedConfig || { routerDescriptions: DEFAULT_ROUTER_DESCRIPTIONS },
+  )
+  return TIERS.reduce((acc, { key }) => {
+    const fields = routerDescriptionFields[key] || {}
+    const fallback = existing[key] || getRouterDescriptionDefaults(key)
+    const highlightValue =
+      typeof fields.highlight?.value === 'string'
+        ? fields.highlight.value.trim()
+        : fallback.highlight
+    const descriptionValue =
+      typeof fields.description?.value === 'string'
+        ? fields.description.value.trim()
+        : fallback.description
+    acc[key] = {
+      highlight: highlightValue,
+      description: descriptionValue,
+    }
+    return acc
+  }, {})
+}
 
 const getActiveStoreName = () => {
   const formValue = userProfileFields.storeName?.value || ''
@@ -743,6 +812,7 @@ const requestPromptGeneration = async ({ tier, promptKey, userContext = null }) 
   }
   promptGeneratorRequestInFlight = true
   setStatus('AIがプロンプトを生成しています…', 'info', { autoHide: false })
+  await waitForStatusPaint()
   try {
     const payload = { tier, promptKey }
     const basePromptDraft = (promptGeneratorFields.prompt?.value || '').trim()
@@ -1443,6 +1513,7 @@ const headerImageFields = {
 
 const applyBrandingToUI = (value) => {
   const dataUrl = typeof value === 'string' ? value : ''
+  brandingData.logoDataUrl = dataUrl
   if (brandingFields.dataInput) {
     brandingFields.dataInput.value = dataUrl
   }
@@ -1455,6 +1526,7 @@ const applyBrandingToUI = (value) => {
 
 const applyHeaderImageToUI = (value) => {
   const dataUrl = typeof value === 'string' ? value : ''
+  brandingData.headerImageDataUrl = dataUrl
   if (headerImageFields.dataInput) {
     headerImageFields.dataInput.value = dataUrl
   }
@@ -1512,7 +1584,8 @@ const handleBrandingRemove = () => {
   applyBrandingToUI('')
 }
 
-const getBrandingValue = () => brandingFields.dataInput?.value?.trim() || ''
+const getBrandingValue = () =>
+  brandingData.logoDataUrl || brandingFields.dataInput?.value?.trim() || ''
 
 const handleHeaderImageFileChange = () => {
   const file = headerImageFields.fileInput?.files?.[0]
@@ -1550,7 +1623,8 @@ const handleHeaderImageRemove = () => {
   applyHeaderImageToUI('')
 }
 
-const getHeaderImageValue = () => headerImageFields.dataInput?.value?.trim() || ''
+const getHeaderImageValue = () =>
+  brandingData.headerImageDataUrl || headerImageFields.dataInput?.value?.trim() || ''
 
 const setTabMenuState = (isOpen) => {
   if (!tabMenu || !tabMenuTrigger) return
@@ -1597,6 +1671,16 @@ const setStatus = (message, type = 'info', options = {}) => {
     }, duration)
   }
 }
+
+const waitForStatusPaint = () =>
+  new Promise((resolve) => {
+    const schedule = typeof window !== 'undefined' && window.requestAnimationFrame
+    if (schedule) {
+      window.requestAnimationFrame(() => resolve())
+    } else {
+      setTimeout(resolve, 16)
+    }
+  })
 
 const getPromptReferenceByTier = (tier) => {
   if (!tier || !promptGeneratorData?.references) {
@@ -1839,6 +1923,18 @@ function populateForm(config) {
     }
   })
 
+  const routerDescriptions = getRouterDescriptionsFromConfig(config)
+  TIERS.forEach(({ key }) => {
+    const fields = routerDescriptionFields[key]
+    const descriptionConfig = routerDescriptions[key] || getRouterDescriptionDefaults(key)
+    if (fields?.highlight) {
+      fields.highlight.value = descriptionConfig.highlight
+    }
+    if (fields?.description) {
+      fields.description.value = descriptionConfig.description
+    }
+  })
+
   const ai = config.aiSettings || {}
   if (aiFields.geminiApiKey) {
     if (ai.hasGeminiApiKey) {
@@ -1966,20 +2062,23 @@ const hasInvalidUrl = (value) => {
 form.addEventListener('submit', async (event) => {
   event.preventDefault()
 
+  setStatus('設定を保存しています…', 'info', { autoHide: false })
+  await waitForStatusPaint()
   await refreshLoadedConfigSilently()
 
   const existingPrompts = { ...(loadedConfig?.prompts || {}) }
-const canEditUserDataSettings = Boolean(
-  userDataFields.spreadsheetUrl || userDataFields.submitGasUrl || userDataFields.readGasUrl,
-)
-const existingUserDataSettings = { ...(loadedConfig?.userDataSettings || {}) }
+  const canEditUserDataSettings = Boolean(
+    userDataFields.spreadsheetUrl || userDataFields.submitGasUrl || userDataFields.readGasUrl,
+  )
+  const existingUserDataSettings = { ...(loadedConfig?.userDataSettings || {}) }
 
-const payload = {
-  labels: { ...(loadedConfig?.labels || {}) },
-  tiers: { ...(loadedConfig?.tiers || {}) },
-  aiSettings: { ...(loadedConfig?.aiSettings || {}) },
-  prompts: {},
-  branding: { ...(loadedConfig?.branding || {}) },
+  const payload = {
+    labels: { ...(loadedConfig?.labels || {}) },
+    tiers: { ...(loadedConfig?.tiers || {}) },
+    aiSettings: { ...(loadedConfig?.aiSettings || {}) },
+    prompts: {},
+    branding: { ...(loadedConfig?.branding || {}) },
+    routerDescriptions: { ...(loadedConfig?.routerDescriptions || {}) },
     surveyResults: {
       ...DEFAULT_SURVEY_RESULTS,
       ...(loadedConfig?.surveyResults || {}),
@@ -2017,14 +2116,16 @@ const payload = {
     }
   })
 
-const aiSettings = { ...(payload.aiSettings || {}) }
-aiSettings.geminiApiKey = ''
-if (aiFields.geminiApiKey) {
-  const geminiValue = (aiFields.geminiApiKey.value || '').trim()
-  if (geminiValue && geminiValue !== '******') {
-    aiSettings.geminiApiKey = geminiValue
+  payload.routerDescriptions = getRouterDescriptionsPayload()
+
+  const aiSettings = { ...(payload.aiSettings || {}) }
+  aiSettings.geminiApiKey = ''
+  if (aiFields.geminiApiKey) {
+    const geminiValue = (aiFields.geminiApiKey.value || '').trim()
+    if (geminiValue && geminiValue !== '******') {
+      aiSettings.geminiApiKey = geminiValue
+    }
   }
-}
   if (aiFields.model) {
     aiSettings.model = (aiFields.model.value || '').trim()
   }
@@ -2155,8 +2256,6 @@ if (aiFields.geminiApiKey) {
     setStatus(errors.join(' / '), 'error')
     return
   }
-
-  setStatus('設定を保存しています…')
   try {
     const response = await fetch('/.netlify/functions/config', {
       method: 'POST',
@@ -2210,7 +2309,8 @@ if (aiFields.geminiApiKey) {
 
     let userProfileSyncResult = { status: 'skipped' }
     if (isUserApp && hasUserDataSyncConfig()) {
-      setStatus('店舗情報を保存しています…')
+      setStatus('店舗情報を保存しています…', 'info', { autoHide: false })
+      await waitForStatusPaint()
       userProfileSyncResult = await syncUserProfileExternally(payload.userProfile)
       if (userProfileSyncResult.status === 'error') {
         setStatus(userProfileSyncResult.message, 'error')
