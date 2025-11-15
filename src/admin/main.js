@@ -1690,18 +1690,23 @@ const getPromptReferenceByTier = (tier) => {
   return typeof reference === 'string' ? reference.trim() : ''
 }
 
-const insertPromptTemplateReference = (
+const insertPromptTemplateReference = async (
   tier,
   targetField,
   {
     successMessage = 'テンプレートを挿入しました。',
     emptyMessage = '選択したテンプレートが登録されていません。管理画面で登録してください。',
+    refreshIfEmpty = isUserApp,
   } = {},
 ) => {
   if (!targetField?.prompt) {
     return false
   }
-  const template = getPromptReferenceByTier(tier)
+  let template = getPromptReferenceByTier(tier)
+  if (!template && refreshIfEmpty) {
+    await refreshLoadedConfigSilently()
+    template = getPromptReferenceByTier(tier)
+  }
   if (!template) {
     if (emptyMessage) {
       setStatus(emptyMessage, 'error')
@@ -1839,7 +1844,7 @@ if (promptInsertButtons.length > 0 && promptPopover.element) {
 
       if (!promptGeneratorData.hasGeminiApi) {
         hidePromptPopover()
-        insertTemplateFallback()
+        await insertTemplateFallback()
         return
       }
 
@@ -1862,7 +1867,7 @@ if (promptInsertButtons.length > 0 && promptPopover.element) {
       if (generatedPrompt) {
         targetField.prompt.value = generatedPrompt
       } else if (isUserApp) {
-        insertTemplateFallback({ successMessage: '' })
+        await insertTemplateFallback({ successMessage: '' })
       }
     })
   })
