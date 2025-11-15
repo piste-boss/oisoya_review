@@ -750,16 +750,12 @@ submitButton?.addEventListener('click', async () => {
     if (hasEndpoint) {
       setStatus('アンケート結果を送信しています…')
       await sendSurveyResults(answers, answersOrdered, submissionTimestamp, responseId)
-      setStatus('回答を送信しました。口コミ生成ページへ移動します。', 'success')
-    } else {
-      setStatus('回答を保存しました。口コミ生成ページへ移動します。', 'success')
     }
+    setStatus('')
     storeLastSubmissionInfo(FORM_KEY, submissionTimestamp, responseId)
     // eslint-disable-next-line no-console
     console.log(`${FORM_KEY} answers`, answersOrdered)
-    window.setTimeout(() => {
-      redirectToGenerator(submissionTimestamp, responseId)
-    }, 600)
+    redirectToGenerator(submissionTimestamp, responseId)
   } catch (error) {
     console.error(error)
     setStatus(error.message || '回答の送信に失敗しました。時間をおいて再度お試しください。', 'error')
