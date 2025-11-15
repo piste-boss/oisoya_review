@@ -1929,6 +1929,7 @@ const refreshLoadedConfigSilently = async () => {
   try {
     const response = await fetch('/.netlify/functions/config', {
       headers: { 'Cache-Control': 'no-cache' },
+      cache: 'no-store',
     })
     if (!response.ok) {
       return null
@@ -1992,12 +1993,6 @@ const payload = {
     userProfile: { ...(loadedConfig?.userProfile || {}) },
     promptGenerator: { ...(loadedConfig?.promptGenerator || DEFAULT_PROMPT_GENERATOR) },
   }
-  const cloneFormConfig = (key) =>
-    loadedConfig?.[key] ? JSON.parse(JSON.stringify(loadedConfig[key])) : undefined
-  payload.form1 = cloneFormConfig('form1')
-  payload.form2 = cloneFormConfig('form2')
-  payload.form3 = cloneFormConfig('form3')
-
   const errors = []
 
   TIERS.forEach(({ key, defaultLabel }) => {
@@ -2181,6 +2176,15 @@ if (aiFields.geminiApiKey) {
       loadedConfig = savedConfig
       populateForm(savedConfig)
     } else {
+      const fallbackFormConfig = (key) => {
+        if (payload[key]) {
+          return payload[key]
+        }
+        if (loadedConfig?.[key]) {
+          return JSON.parse(JSON.stringify(loadedConfig[key]))
+        }
+        return SURVEY_FORM_DEFAULTS[key] || DEFAULT_FORM2
+      }
       const fallbackConfig = {
         labels: payload.labels,
         tiers: payload.tiers,
@@ -2194,9 +2198,9 @@ if (aiFields.geminiApiKey) {
         userDataSettings: canEditUserDataSettings
           ? payload.userDataSettings
           : existingUserDataSettings,
-        form1: payload.form1,
-        form2: payload.form2,
-        form3: payload.form3,
+        form1: fallbackFormConfig('form1'),
+        form2: fallbackFormConfig('form2'),
+        form3: fallbackFormConfig('form3'),
         userProfile: payload.userProfile,
         promptGenerator: payload.promptGenerator,
       }
