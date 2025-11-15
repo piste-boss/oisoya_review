@@ -330,6 +330,25 @@ const promptGeneratorFields = {
   },
 }
 
+const updatePromptGeneratorDataCache = (config = {}) => {
+  const references = config.references || {}
+  const normalized = {
+    hasGeminiApi: Boolean(
+      config.hasGeminiApi ||
+        config.hasPromptGeneratorGeminiApi ||
+        (typeof config.geminiApi === 'string' && config.geminiApi.length > 0),
+    ),
+    prompt: typeof config.prompt === 'string' ? config.prompt : '',
+    references: {
+      light: typeof references.light === 'string' ? references.light : '',
+      standard: typeof references.standard === 'string' ? references.standard : '',
+      platinum: typeof references.platinum === 'string' ? references.platinum : '',
+    },
+  }
+  promptGeneratorData = normalized
+  return normalized
+}
+
 const getStoredUserProfileValue = (key) =>
   typeof loadedConfig?.userProfile?.[key] === 'string' ? loadedConfig.userProfile[key] : ''
 
@@ -613,8 +632,9 @@ const getUserProfilePayload = () => {
 }
 
 const setPromptGeneratorValues = (config = {}) => {
-  const references = config.references || {}
-  const hasGeminiApi = Boolean(config.hasGeminiApi || config.hasPromptGeneratorGeminiApi)
+  const normalized = updatePromptGeneratorDataCache(config)
+  const references = normalized.references || {}
+  const hasGeminiApi = Boolean(normalized.hasGeminiApi)
   if (promptGeneratorFields.geminiApi) {
     if (hasGeminiApi) {
       promptGeneratorFields.geminiApi.value = '******'
@@ -628,7 +648,7 @@ const setPromptGeneratorValues = (config = {}) => {
     }
   }
   if (promptGeneratorFields.prompt) {
-    promptGeneratorFields.prompt.value = config.prompt || ''
+    promptGeneratorFields.prompt.value = normalized.prompt
   }
   if (promptGeneratorFields.references.light) {
     promptGeneratorFields.references.light.value = references.light || ''
@@ -638,15 +658,6 @@ const setPromptGeneratorValues = (config = {}) => {
   }
   if (promptGeneratorFields.references.platinum) {
     promptGeneratorFields.references.platinum.value = references.platinum || ''
-  }
-  promptGeneratorData = {
-    hasGeminiApi,
-    prompt: config.prompt || '',
-    references: {
-      light: references.light || '',
-      standard: references.standard || '',
-      platinum: references.platinum || '',
-    },
   }
 }
 
@@ -1259,6 +1270,22 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
   addButton?.addEventListener('click', handleAddQuestion)
   renderQuestions()
 
+  const getStoredFormConfig = () => {
+    const stored = loadedConfig?.[key]
+    if (stored && typeof stored === 'object') {
+      return stored
+    }
+    return {}
+  }
+
+  const resolveFieldValue = (field, storedValue, defaultValue) => {
+    const rawValue = typeof field?.value === 'string' ? field.value.trim() : ''
+    if (field) {
+      return rawValue || defaultValue
+    }
+    return rawValue || storedValue || defaultValue
+  }
+
   return {
     key,
     defaults,
@@ -1274,12 +1301,21 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
       setQuestions(config.questions)
     },
     toPayload: () => {
-      const titleValue = (fields.title?.value || '').trim()
-      const leadValue = (fields.lead?.value || '').trim()
+      const storedConfig = getStoredFormConfig()
+      const titleValue = resolveFieldValue(
+        fields.title,
+        typeof storedConfig.title === 'string' ? storedConfig.title : '',
+        defaults.title,
+      )
+      const leadValue = resolveFieldValue(
+        fields.lead,
+        typeof storedConfig.description === 'string' ? storedConfig.description : '',
+        defaults.description,
+      )
       const questionPayload = getPayloadQuestions()
       return {
-        title: titleValue || defaults.title,
-        description: leadValue || defaults.description,
+        title: titleValue,
+        description: leadValue,
         questions:
           questionPayload.length > 0
             ? questionPayload
@@ -1865,6 +1901,26 @@ const loadConfig = async () => {
   }
 }
 
+const refreshLoadedConfigSilently = async () => {
+  try {
+    const response = await fetch('/.netlify/functions/config', {
+      headers: { 'Cache-Control': 'no-cache' },
+    })
+    if (!response.ok) {
+      return null
+    }
+    const payload = await response.json()
+    if (payload && typeof payload === 'object') {
+      loadedConfig = payload
+      updatePromptGeneratorDataCache(payload.promptGenerator || DEFAULT_PROMPT_GENERATOR)
+    }
+    return payload
+  } catch (error) {
+    console.warn('Failed to refresh config before submit', error)
+    return null
+  }
+}
+
 const parseLinks = (text) =>
   text
     .split('\n')
@@ -1884,6 +1940,8 @@ const hasInvalidUrl = (value) => {
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault()
+
+  await refreshLoadedConfigSilently()
 
   const existingPrompts = { ...(loadedConfig?.prompts || {}) }
 const canEditUserDataSettings = Boolean(
