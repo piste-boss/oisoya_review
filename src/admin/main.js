@@ -970,14 +970,28 @@ const createSurveyQuestion = (overrides = {}) => {
 function createSurveyFormManager({ key, fields, questionListEl, addButton, defaults }) {
   const fallbackQuestions = defaults?.questions || []
   let questions = fallbackQuestions.map((question) => cloneQuestion(question))
+  let isDirty = false
+
+  const markDirty = () => {
+    isDirty = true
+  }
+
+  if (fields?.title) {
+    fields.title.addEventListener('input', markDirty)
+  }
+  if (fields?.lead) {
+    fields.lead.addEventListener('input', markDirty)
+  }
 
   const setQuestions = (nextQuestions) => {
     questions = sanitizeSurveyQuestionsConfig(nextQuestions, fallbackQuestions)
+    isDirty = false
     renderQuestions()
   }
 
   const removeQuestion = (questionId) => {
     questions = questions.filter((question) => question.id !== questionId)
+    markDirty()
     renderQuestions()
   }
 
@@ -988,6 +1002,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
         options: ['選択肢1', '選択肢2'],
       }),
     )
+    markDirty()
     renderQuestions()
   }
 
@@ -1025,6 +1040,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
     titleInput.value = question.title
     titleInput.addEventListener('input', () => {
       question.title = titleInput.value
+      markDirty()
     })
     titleField.appendChild(titleInput)
     fieldsWrapper.appendChild(titleField)
@@ -1042,6 +1058,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
     typeSelect.value = normalizeQuestionType(question.type)
     typeSelect.addEventListener('change', () => {
       question.type = normalizeQuestionType(typeSelect.value)
+      markDirty()
       refreshQuestionState()
     })
     typeField.appendChild(typeSelect)
@@ -1064,6 +1081,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
     ratingStyleSelect.value = normalizeRatingStyle(question.ratingStyle)
     ratingStyleSelect.addEventListener('change', () => {
       question.ratingStyle = normalizeRatingStyle(ratingStyleSelect.value)
+      markDirty()
     })
     ratingStyleField.appendChild(ratingStyleSelect)
     const ratingStyleHint = document.createElement('span')
@@ -1082,6 +1100,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
     optionsTextarea.addEventListener('input', () => {
       const next = sanitizeOptionsList(optionsTextarea.value)
       question.options = next.length > 0 ? next : []
+      markDirty()
     })
     optionsField.appendChild(optionsTextarea)
     const optionsHint = document.createElement('span')
@@ -1099,6 +1118,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
     placeholderInput.value = question.placeholder || ''
     placeholderInput.addEventListener('input', () => {
       question.placeholder = placeholderInput.value
+      markDirty()
     })
     placeholderField.appendChild(placeholderInput)
     const placeholderHint = document.createElement('span')
@@ -1135,6 +1155,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
     requiredInput.addEventListener('change', () => {
       question.required = requiredInput.checked
       setToggleStatusText(requiredStatus, requiredInput.checked)
+      markDirty()
     })
     requiredControl.append(requiredInput, requiredTrack, requiredStatus)
     requiredToggle.appendChild(requiredControl)
@@ -1163,6 +1184,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
     reviewInput.addEventListener('change', () => {
       question.includeInReview = reviewInput.checked
       setToggleStatusText(reviewStatus, reviewInput.checked)
+      markDirty()
     })
     reviewControl.append(reviewInput, reviewTrack, reviewStatus)
     reviewToggle.appendChild(reviewControl)
@@ -1208,6 +1230,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
 
     multipleInput.addEventListener('change', () => {
       question.allowMultiple = multipleInput.checked
+      markDirty()
     })
 
     refreshQuestionState()
@@ -1291,6 +1314,7 @@ function createSurveyFormManager({ key, fields, questionListEl, addButton, defau
     defaults,
     fields,
     setQuestions,
+    isDirty: () => isDirty,
     load: (config = {}) => {
       if (fields.title) {
         fields.title.value = config.title || defaults.title
@@ -2127,7 +2151,9 @@ if (aiFields.geminiApiKey) {
   surveyFormConfigs.forEach(({ key }) => {
     const manager = surveyFormManagers[key]
     if (!manager) return
-    payload[key] = manager.toPayload()
+    if (manager.isDirty()) {
+      payload[key] = manager.toPayload()
+    }
   })
 
   if (errors.length > 0) {
