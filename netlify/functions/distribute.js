@@ -112,9 +112,13 @@ const mergeWithDefault = (config = {}, fallback = DEFAULT_CONFIG) => {
   }
 }
 
+const cloneDefaultConfig = () => JSON.parse(JSON.stringify(DEFAULT_CONFIG))
+
 const fetchConfig = async (store) => {
   const storedConfig = await store.get(CONFIG_KEY, { type: 'json' }).catch(() => null)
-  return mergeWithDefault(storedConfig || DEFAULT_CONFIG)
+  const baseConfig =
+    storedConfig && typeof storedConfig === 'object' ? storedConfig : cloneDefaultConfig()
+  return mergeWithDefault(baseConfig, baseConfig)
 }
 
 const persistConfig = async (store, config) => {
