@@ -30,6 +30,7 @@ const brandingData = {
   logoDataUrl: '',
   headerImageDataUrl: '',
 }
+let headerImageDirty = false
 
 const TIERS = [
   {
@@ -1527,6 +1528,7 @@ const applyBrandingToUI = (value) => {
 const applyHeaderImageToUI = (value) => {
   const dataUrl = typeof value === 'string' ? value : ''
   brandingData.headerImageDataUrl = dataUrl
+  headerImageDirty = false
   if (headerImageFields.dataInput) {
     headerImageFields.dataInput.value = dataUrl
   }
@@ -1608,6 +1610,7 @@ const handleHeaderImageFileChange = () => {
   reader.onload = () => {
     if (typeof reader.result === 'string') {
       applyHeaderImageToUI(reader.result)
+      headerImageDirty = true
     }
   }
   reader.onerror = () => {
@@ -1621,6 +1624,7 @@ const handleHeaderImageRemove = () => {
     headerImageFields.fileInput.value = ''
   }
   applyHeaderImageToUI('')
+  headerImageDirty = true
 }
 
 const getHeaderImageValue = () =>
@@ -2230,7 +2234,9 @@ form.addEventListener('submit', async (event) => {
 
   if (brandingFields.dataInput || headerImageFields.dataInput) {
     const logoDataUrl = getBrandingValue()
-    const headerImageDataUrl = getHeaderImageValue()
+    const headerImageValue = getHeaderImageValue()
+    const existingHeaderImage = payload.branding?.headerImageDataUrl || ''
+    const headerImageDataUrl = headerImageDirty ? headerImageValue : headerImageValue || existingHeaderImage
     payload.branding = {
       ...payload.branding,
       logoDataUrl,
