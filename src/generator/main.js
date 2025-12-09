@@ -164,6 +164,29 @@ if (currentConfig.aiSettings) {
 }
 applyBrandingLogo(currentConfig.branding)
 
+const loadConfig = async () => {
+  try {
+    const response = await fetch('/.netlify/functions/config')
+    if (!response.ok) {
+      throw new Error('設定の取得に失敗しました。')
+    }
+
+    const payload = await response.json()
+    if (!payload || typeof payload !== 'object') return
+
+    currentConfig = { ...payload }
+    writeCachedConfig(currentConfig)
+
+    if (currentConfig.aiSettings) {
+      applyMapsLink(currentConfig.aiSettings.mapsLink)
+    }
+    applyBrandingLogo(currentConfig.branding)
+  } catch (error) {
+    console.warn('Failed to load config for generator page', error)
+  }
+}
+loadConfig()
+
 const toggleLoading = (isLoading) => {
   if (isLoading) {
     generateButton.setAttribute('disabled', '')
@@ -269,6 +292,7 @@ window.addEventListener('pageshow', (event) => {
       }
       applyBrandingLogo(latest.branding)
     }
+    loadConfig()
     setStatus('ページを再読み込みしました。', 'info')
   }
 })
